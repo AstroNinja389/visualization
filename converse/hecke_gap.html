@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hecke's Gap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<style>
+:root{
+  --bg:#000000; --panel:#0b0e13; --fg:#ececf1; --muted:#9aa3b5; --rule:#2b3140;
+  --teal:#2dd4bf; --purple:#bf5fff; --amber:#ffb347; --accent:#2dd4bf; --focus:#2dd4bf; color-scheme:dark;
+  --display:"Spectral",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; } }
+:root[data-theme="dark"]{ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; }
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1160px;margin:0 auto}
+.back{padding-top:18px;font-size:15px}
+.back a{color:var(--muted);text-decoration:none}
+.back a:hover{color:var(--fg)}
+header{padding:10px 0 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 24px}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);letter-spacing:-.01em;margin:0;line-height:1.05}
+.kicker{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;min-width:0;position:relative;margin-top:10px}
+.panel canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 14px 12px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:2px}
+.cap{min-height:4.2em;margin-top:14px;font-family:var(--display);font-size:clamp(18px,2.2vw,22px);line-height:1.4;max-width:66ch}
+.cap > div{animation:fade .45s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.readout{min-height:2.8em;margin-top:6px;font-size:15px;color:var(--muted);max-width:90ch}
+.phases{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);margin-top:8px}
+.phases button{font:inherit;font-size:13px;background:none;border:0;color:var(--muted);cursor:pointer;padding:2px 4px;border-bottom:1px solid transparent}
+.phases button[aria-current]{color:var(--fg);border-bottom-color:var(--fg)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px}
+.ctl .group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ctl button{font:inherit;font-size:15px;font-weight:600;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:7px 16px;cursor:pointer;min-width:84px}
+.ctl button.secondary{background:none;color:var(--fg)}
+.ctl label{color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent)}
+#scrub{width:min(360px,60vw)}
+.ctl button:focus-visible,input:focus-visible,.phases button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.thm{margin-top:40px;padding-top:22px;border-top:1px solid var(--rule);max-width:80ch;font-family:var(--display);font-size:17px;line-height:1.6}
+.thm p{margin:0 0 .9em}
+.thm .label{font-weight:600}
+.thm .note{color:var(--muted);font-size:16px}
+.thm .katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
+@media (prefers-reduced-motion: reduce){ .cap > div{animation:none} }
+</style>
+
+<div class="wrap">
+<nav class="back"><a href="index.html">← All visualizations</a></nav>
+<header>
+  <h1>Hecke's gap</h1>
+  <span class="kicker">Why twists are needed, and where they fail</span>
+</header>
+
+<section class="panel">
+  <canvas id="cv" width="1100" height="560" aria-label="Upper half-plane over the interval from 0 to 1 with the semicircles inside which the functional equations raise a point; gaps on the real line are highlighted"></canvas>
+  <div class="legend">
+    <span><i style="background:var(--teal)"></i>q = 1, 2: one translate, the relation moves a point up</span>
+    <span><i style="background:var(--purple)"></i>q ≥ 3: the relation only controls a sum over a/q</span>
+    <span><i style="background:var(--amber)"></i>not covered, or two semicircles only touch</span>
+    <span><i style="background:rgba(236,236,241,.28)"></i>fundamental domain (q = 1 only)</span>
+  </div>
+</section>
+
+<div class="cap" id="cap">
+  <div data-ph="0">Hecke: the functional equation relates \(f(z)\) to \(f(-1/(Nz))\), a half-turn about \(i/\sqrt N\) that moves every point inside the semicircles \(|z-n|<1/\sqrt N\) up. It is a reflection in the semicircle followed by a reflection in a vertical line. The shaded region above the semicircles is a fundamental domain for \(z\mapsto z+1\) and \(z\mapsto-1/(Nz)\); for \(N\le4\) its hyperbolic area is \(2\arcsin(\sqrt N/2)\).</div>
+  <div data-ph="1" hidden>At \(N=5\) a gap opens at \(\tfrac12\) and the fundamental domain reaches the real line, so its area is infinite. Over the gap the functional equation gives no control: for \(N\ge5\) the series satisfying it form an infinite-dimensional space.</div>
+  <div data-ph="2" hidden>The Euler product gives a functional equation for the twist by every Ramanujan sum \(c_q\), with conductor \(\operatorname{lcm}(N,q^2)\). For \(q=2\) only the translate \(z+\tfrac12\) occurs, so this is one more half-turn, about \(\tfrac12+i/\sqrt{\operatorname{lcm}(N,4)}\).</div>
+  <div data-ph="3" hidden>With \(q\le 2\) the line stays covered up to \(N=8\). At \(N=9\) the semicircles only touch, at \(\tfrac13\) and \(\tfrac23\): the two cusps of \(\Gamma_0(9)\) with denominator \(3\).</div>
+  <div data-ph="4" hidden>At \(N=11\) gaps open that no single half-turn reaches. (\(N=10\) and \(N=12\) are still covered with \(q\le2\); from \(N=13\) on they never are.)</div>
+  <div data-ph="5" hidden>Twists with \(q\ge3\) reach the gaps, but each controls only the sum of \(f\) over the translates \(z+a/q\) with \(\gcd(a,q)=1\): the hollow dots all turn together. The spanning theorem says these sums can be untangled exactly when \(16\nmid N\) and \(p^2\nmid N\) for every odd prime \(p\).</div>
+  <div data-ph="6" hidden>At \(N=9\) they cannot be. Only one semicircle contains \(\tfrac13\): the \(q=3\) one centred there; every other one is at best tangent. Its relation only sees \(f(z+\tfrac13)+f(z+\tfrac23)\), in which \(+1\) near \(\tfrac13\) and \(-1\) near \(\tfrac23\) cancel. The paper's vector with these signs is orthogonal to every legal row.</div>
+  <div data-ph="7" hidden>Choose \(N\) and the largest \(q\) below, and hover over the picture (or touch it) to see a point reflected in its semicircle and then in a vertical line, which together make the half-turn about the top of the semicircle.</div>
+</div>
+<div class="phases" id="phases"></div>
+<div class="readout" id="readout" aria-live="polite"></div>
+
+<div class="ctl">
+  <div class="group">
+    <button type="button" id="btnPlay">Pause</button>
+    <button type="button" id="btnRestart" class="secondary">Restart</button>
+  </div>
+  <div class="group"><input type="range" id="scrub" min="0" max="48" step="0.01" value="0" aria-label="Scrub through the tour"><span class="mono" id="clock">0.0 s</span></div>
+  <div class="group"><label for="sN">N</label><input type="range" id="sN" min="1" max="60" step="1" value="1"><span class="mono" id="vN">1</span></div>
+  <div class="group"><label for="sQ">q ≤</label><input type="range" id="sQ" min="1" max="16" step="1" value="1"><span class="mono" id="vQ">1</span></div>
+</div>
+
+<section class="thm">
+  <p>For a sequence \((f_n)\) put \(f(z)=\sum_{n\ge1} f_n n^{\frac{k-1}{2}}e^{2\pi i n z}\). The functional equation of \(L_f(s)\) is equivalent to
+  $$f\!\left(-\frac{1}{Nz}\right)=\epsilon_f\,(-i\sqrt N z)^k f(z).$$
+  The map \(z\mapsto-1/(Nz)\) is a half-turn of the hyperbolic plane about \(i/\sqrt N\), and \(\operatorname{Im}(-1/(Nz))=\operatorname{Im}(z)/(N|z|^2)\), so it moves \(z\) up exactly when \(|z|<1/\sqrt N\). Together with \(f(z+1)=f(z)\), this determines \(f\) near the real line from its values higher up wherever the semicircles \(|z-n|<1/\sqrt N\) reach. That is everywhere when \(N\le4\), when the region \(0\le\operatorname{Re}z\le1\), \(|z|\ge1/\sqrt N\), \(|z-1|\ge1/\sqrt N\) is a fundamental domain of finite area \(2\arcsin(\sqrt N/2)\) for the group generated by the two maps (\(\pi/3,\pi/2,2\pi/3,\pi\) for \(N=1,2,3,4\)).</p>
+  <p>If \(L_f\) has an Euler product, the twist of \(L_f\) by the Ramanujan sum \(c_q(n)=\sum_{\gcd(a,q)=1}e^{2\pi i an/q}\) satisfies a functional equation of conductor \(\ell_N(q)=\operatorname{lcm}(N,q^2)\). In terms of \(f\) it relates \(\sum_{\gcd(a,q)=1}f(z+\tfrac aq)\) to the same sum at \(-1/(\ell_N(q)z)\): the half-turn about \(i/\sqrt{\ell_N(q)}\), applied to all the translates at once. It raises points inside the semicircles of radius \(1/\sqrt{\ell_N(q)}\) centred at the fractions \(a/q\).</p>
+  <p><span class="label">The spanning theorem</span> (the case of the empty set of primes). For \(Q\in\mathbb N\), \(q\mid Q\) and \(u\in\mathbb Z\), let \(R^Q_{q,u}=\sum_{\gcd(a,q)=1}e_{u+aQ/q}\in\mathbb Q^{\mathbb Z/Q\mathbb Z}\), and call it <em>legal</em> if \(\max\{|u|,|u+1|\}<Q/\sqrt{\ell_N(q)}\). There is a \(Q\) for which the legal rows span \(\mathbb Q^{\mathbb Z/Q\mathbb Z}\) if and only if \(N\) is divisible neither by \(16\) nor by \(p^2\) for an odd prime \(p\).</p>
+  <p class="note">A legal row is a relation used on the cell \([\tfrac uQ,\tfrac{u+1}{Q}]\) shifted to each \(a/q\): the cell has to lie inside the shadow of the semicircle. When the rows span, every value of \(f\) near the real line is a combination of values strictly higher up. At an excluded level the points \(a/s\) (\(s=p\) with \(p^2\mid N\), or \(s=4\) with \(16\mid N\)) lie inside exactly one semicircle each, the one with \(q=s\) centred there; this was checked in exact arithmetic for all \(q\le200\) at \(N=9,16,18,25,27,36\).</p>
+</section>
+<footer>
+  <p>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>. Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\); between integer values of \(N\) the radii are interpolated. The moving points follow the half-turns exactly, as two reflections along geodesics: in the semicircle, then in a vertical line; that line is drawn through the centre or a point half an integer away, which is the same map modulo 1.</p>
+</footer>
+</div>
+
+<script>
+(() => {
+const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347', INK='#ececf1', MUTED='#9aa3b5', PANEL='#0b0e13';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const W=1100, H0=560;
+let H=H0, dpr=1, FS=1, LW=1;
+function resize(){
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  const cssW=cv.getBoundingClientRect().width||W;
+  FS=Math.max(1,Math.min(2.8,888/cssW)); LW=Math.max(1,0.7*FS);
+  H=H0+Math.round(55*(FS-1));
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+}
+resize(); window.addEventListener('resize',resize);
+const fsz=b=>Math.round(b*(b>=24?Math.min(FS,1.8):FS));
+
+// ---- camera: zooms out when the q = 1 semicircle would not fit ------------
+const L=40, R=40, BASE=448, TOPPX=10;
+const S0=(W-L-R)/1.24, YMAX0=(BASE-TOPPX)/S0;
+let CS=S0, CX0=-0.12, YMAX=YMAX0;
+function setCamera(Nf){ const zoom=Math.max(1,(1/Math.sqrt(Nf))/(0.94*YMAX0)); CS=S0/zoom; CX0=0.5-(W-L-R)/(2*CS); YMAX=(BASE-TOPPX)/CS; }
+const sx=x=>L+(x-CX0)*CS, sy=y=>BASE-y*CS;
+const wx=px=>CX0+(px-L)/CS, wy=py=>(BASE-py)/CS;
+const XR=()=>[CX0,CX0+(W-L-R)/CS];
+
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;};
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+const lerp=(a,b,t)=>a+(b-a)*t;
+function rgba(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
+
+function radius(q,Nf){
+  const n0=Math.floor(Nf+1e-9), t=Nf-n0;
+  const r0=1/Math.sqrt(lcm(n0,q*q));
+  if(t<1e-6) return r0;
+  return lerp(r0,1/Math.sqrt(lcm(n0+1,q*q)),t);
+}
+
+// ---- timeline -------------------------------------------------------------
+const KN=[[0,1],[2,1],[3,2],[4.5,2],[5.5,3],[7,3],[8,4],[10,4],[11.5,5],[17.5,5],[18.3,6],[19,6],[19.8,7],[20.5,7],[21.3,8],[22,8],[22.8,9],[25,9],[25.8,10],[26.5,10],[27.3,11],[39,11],[40.5,9],[48,9]];
+const KQ=[[0,1],[14,1],[15.5,2],[30,2],[36,12],[48,12]];
+const PH=[[0,'Hecke, N ≤ 4'],[10,'The gap'],[14,'Twist by c₂'],[17.5,'Up to N = 9'],[25,'N = 11'],[30,'Linked twists'],[39,'The obstruction'],[48,'Explore']];
+const END=48, OBS0=41;
+const PROBE=[null,[0.46,0.15],[0.46,0.15],[0.22,0.04],[0.31,0.012],[0.31,0.012],[0.383,0.22],null];  // phase 0: tied to the radius, see draw()
+function key(K,t){
+  if(t<=K[0][0]) return K[0][1];
+  for(let i=0;i<K.length-1;i++){ const [t0,v0]=K[i],[t1,v1]=K[i+1]; if(t<=t1) return lerp(v0,v1,ease((t-t0)/(t1-t0))); }
+  return K[K.length-1][1];
+}
+function phaseAt(t){ if(t>=END) return 7; let p=0; for(let i=0;i<PH.length;i++) if(t>=PH[i][0]-1e-9) p=i; return p; }
+
+// ---- state ----------------------------------------------------------------
+let t=0, playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, mode='tour', last=null;
+let NfEx=9, QfEx=12, pointer=null;
+function state(){
+  if(mode==='explore') return {Nf:NfEx, Qf:QfEx, ph:7, obs:1};
+  return {Nf:key(KN,t), Qf:key(KQ,t), ph:phaseAt(t), obs:ease(clamp(t-OBS0,0,1))};
+}
+
+function circlesFor(Nf,Qf){
+  const out=[]; const qtop=Math.min(16,Math.ceil(Qf-1e-9)); const [xa,xb]=XR();
+  for(let q=1;q<=qtop;q++){
+    const al=q===1?1:clamp(Qf-(q-1),0,1); if(al<=0) continue;
+    const r=radius(q,Nf)*(q===1?1:ease(al));
+    for(let A=0;A<q;A++){ if(gcd(A,q)!==1) continue;
+      for(let k=Math.floor(xa)-1;k<=Math.ceil(xb)+1;k++){ const c=A/q+k; if(c-r<xb+0.02&&c+r>xa-0.02) out.push({q,A,c,r,alpha:q===1?1:ease(al)}); }
+    }
+  }
+  return out;
+}
+const EPS=1e-9;
+function merge(iv){
+  iv=iv.filter(v=>v[1]-v[0]>EPS).sort((a,b)=>a[0]-b[0]); const m=[];
+  for(const v of iv){ if(m.length&&v[0]<m[m.length-1][1]-EPS) m[m.length-1][1]=Math.max(m[m.length-1][1],v[1]); else m.push([v[0],v[1]]); }
+  return m;
+}
+function gapsOf(m){
+  const g=[];
+  for(let i=0;i<m.length-1;i++){ const a=m[i][1], b=m[i+1][0]; if(b>=a-EPS&&a>=-EPS&&b<=1+EPS){ const lo=clamp(a,0,1), hi=clamp(b,0,1); g.push([lo,Math.max(lo,hi)]); } }
+  return g;
+}
+function inside(m,x){ for(const v of m){ if(x>v[0]&&x<v[1]) return true; if(v[0]>x) break; } return false; }
+function extraCusps(N){ // points a/s with s = p (odd p^2 | N) or s = 4 (16 | N), and the sign of the paper's vector x there
+  const pts=[]; const ss=[];
+  if(N%16===0) ss.push(4);
+  for(let p=3;p*p<=N;p+=2){ let pr=true; for(let d=3;d*d<=p;d+=2) if(p%d===0) pr=false; if(pr&&N%(p*p)===0) ss.push(p); }
+  for(const s of ss) for(let a=1;a<s;a++) if(gcd(a,s)===1) pts.push({a,s,x:a/s,v:Math.sin(2*Math.PI*a/s)});
+  return pts;
+}
+function frac(c){
+  for(let q=1;q<=40;q++){ const a=Math.round(c*q); if(Math.abs(a/q-c)<1e-9){ const g=gcd(a,q); const A=a/g,Q=q/g; return Q===1?String(A):A+'/'+Q; } }
+  return c.toFixed(3);
+}
+
+// ---- drawing ----------------------------------------------------------------
+function dot(x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill(); }
+
+function draw(now){
+  const st=state(); setCamera(st.Nf);
+  const Nint=Math.round(st.Nf); const settled=Math.abs(st.Nf-Nint)<0.02;
+  const cs=circlesFor(st.Nf,st.Qf);
+  const dir=merge(cs.filter(c=>c.q<=2).map(c=>[c.c-c.r,c.c+c.r]));
+  const all=merge(cs.map(c=>[c.c-c.r,c.c+c.r]));
+  const gaps=gapsOf(all);
+  const cusps=settled?extraCusps(Nint):[];
+  // obstruction highlight: circles that contain an extra cusp, and their partners (same q)
+  const obsQ=new Set();
+  if(cusps.length&&st.obs>0) for(const p of cusps) for(const c of cs) if(Math.abs(p.x-c.c)<c.r-1e-9&&c.alpha>0.9) obsQ.add(c.q);
+  const obsA=obsQ.size?st.obs:0;
+  const fdA=1-ease(clamp(st.Qf-1,0,1));
+  const [xa,xb]=XR();
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=PANEL; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic'; ctx.setLineDash([]); ctx.globalAlpha=1; ctx.shadowBlur=0;
+
+  // probe / pointer
+  let probe=null;
+  if(pointer) probe=pointer;
+  else if(mode==='tour'&&st.ph===0){ const r1=radius(1,st.Nf); probe={x:0.606*r1,y:0.35*r1,auto:true,c:0}; }
+  else if(mode==='tour'&&PROBE[st.ph]) probe={x:PROBE[st.ph][0],y:PROBE[st.ph][1],auto:true};
+  let hit=null;
+  if(probe){ for(const c of cs){ const dx=probe.x-c.c; if(dx*dx+probe.y*probe.y<c.r*c.r && c.alpha>0.6 && (!hit||c.q<hit.q||(c.q===hit.q&&Math.abs(dx)<Math.abs(probe.x-hit.c)))) hit=c; }
+    if(probe.c!==undefined){ const pref=cs.find(c=>Math.abs(c.c-probe.c)<1e-9&&c.q===1); if(pref&&(probe.x-pref.c)**2+probe.y**2<pref.r*pref.r) hit=pref; } }
+
+  ctx.save(); ctx.beginPath(); ctx.rect(L,TOPPX,W-L-R,BASE-TOPPX); ctx.clip();
+  // fundamental domain (q = 1 only)
+  if(fdA>0.01){
+    const r=radius(1,st.Nf), RR=r*CS;
+    ctx.beginPath(); ctx.moveTo(sx(0),TOPPX); ctx.lineTo(sx(0),sy(r));
+    if(r>0.5){ const a=Math.acos(0.5/r); ctx.arc(sx(0),BASE,RR,-Math.PI/2,-a,false); ctx.arc(sx(1),BASE,RR,a-Math.PI,-Math.PI/2,false); }
+    else { ctx.arc(sx(0),BASE,RR,-Math.PI/2,0,false); ctx.lineTo(sx(1-r),BASE); ctx.arc(sx(1),BASE,RR,Math.PI,1.5*Math.PI,false); }
+    ctx.lineTo(sx(1),TOPPX); ctx.closePath();
+    ctx.fillStyle=rgba(INK,0.075*fdA); ctx.fill();
+    ctx.setLineDash([5,6]); ctx.strokeStyle=rgba(INK,0.35*fdA); ctx.lineWidth=LW; ctx.beginPath();
+    ctx.moveTo(sx(0),TOPPX); ctx.lineTo(sx(0),sy(r)); ctx.moveTo(sx(1),TOPPX); ctx.lineTo(sx(1),sy(r)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  const order=cs.slice().sort((a,b)=>(b.q>2)-(a.q>2)||b.r-a.r);
+  for(const c of order){
+    const linked=c.q>2, col=linked?PURPLE:TEAL;
+    const fade=linked?clamp(1-0.045*(c.q-3),0.45,1):1;
+    const hl=hit&&hit.q===c.q;
+    const ob=obsQ.has(c.q);
+    const dim=obsA>0&&!ob?1-0.7*obsA:1;
+    ctx.beginPath(); ctx.arc(sx(c.c),BASE,c.r*CS,Math.PI,2*Math.PI); ctx.closePath();
+    ctx.fillStyle=rgba(col,(linked?0.05:0.09)*c.alpha*(hl||ob&&obsA>0?2.2:1)*dim); ctx.fill();
+    ctx.lineWidth=(hl||ob&&obsA>0?2.4:1.6)*LW; ctx.strokeStyle=rgba(col,(hl||ob&&obsA>0?1:0.85*fade)*c.alpha*dim); ctx.stroke();
+  }
+  // elliptic fixed points: tops of the q <= 2 semicircles
+  for(const c of cs) if(c.q<=2&&c.r*CS>8){ dot(sx(c.c),sy(c.r),2.2*LW,rgba(INK,0.55)); }
+  // obstruction: join the semicircles of the highlighted q at their tops and name the sum
+  if(obsA>0){
+    for(const q of obsQ){
+      const grp=cs.filter(c=>c.q===q&&c.c>=-1e-9&&c.c<=1+1e-9).sort((a,b)=>a.c-b.c); if(grp.length<2) continue;
+      const yy=sy(grp[0].r);
+      ctx.globalAlpha=obsA; ctx.setLineDash([4,5]); ctx.strokeStyle=PURPLE; ctx.lineWidth=1.4*LW;
+      ctx.beginPath(); ctx.moveTo(sx(grp[0].c),yy); ctx.lineTo(sx(grp[grp.length-1].c),yy); ctx.stroke(); ctx.setLineDash([]);
+      for(const c of grp) dot(sx(c.c),yy,3.2*LW,PURPLE);
+      const terms=grp.map(c=>'f(z+'+frac(c.c)+')');
+      const lab=grp.length<=3?terms.join(' + '):`Σ f(z + a/${q}),  gcd(a, ${q}) = 1`;
+      ctx.fillStyle=INK; ctx.font=`italic ${fsz(17)}px Spectral,Georgia,serif`; ctx.textAlign='center';
+      ctx.fillText(lab,sx((grp[0].c+grp[grp.length-1].c)/2),Math.max(TOPPX+fsz(17),yy-12*LW));
+      ctx.globalAlpha=1;
+    }
+  }
+  // fade the copies outside the fundamental interval
+  ctx.fillStyle=rgba(PANEL,0.62); ctx.fillRect(L,TOPPX,Math.max(0,sx(0)-L),BASE-TOPPX); ctx.fillRect(sx(1),TOPPX,Math.max(0,W-R-sx(1)),BASE-TOPPX);
+
+  // the probe: the half-turn about c + ir drawn as two reflections,
+  // first in the semicircle (along the geodesic through z and its inverse), then in the vertical line x = m
+  let read='';
+  if(probe&&probe.y>0){
+    const zx=probe.x, zy=probe.y;
+    if(hit){
+      const col=hit.q>2?PURPLE:TEAL, r=hit.r, bx=zx-hit.c, by=zy, b2=bx*bx+by*by, g=r*r/b2;
+      const iy=by*g, gain=g;
+      const centres=[]; for(let A=0;A<hit.q;A++) if(gcd(A,hit.q)===1) centres.push(A/hit.q);
+      if(hit.q===1) centres[0]=hit.c;
+      const cyc=(now/1000)%4.4;
+      const s1=ease(clamp((cyc-0.5)/1.4,0,1)), s2=ease(clamp((cyc-2.3)/1.2,0,1));
+      const arcPts=(x1,y1,x2,y2,n)=>{ // geodesic from (x1,y1) to (x2,y2)
+        const pts=[]; if(Math.abs(x1-x2)<1e-9){ for(let i=0;i<=n;i++){ const t=i/n; pts.push([x1,Math.exp(Math.log(y1)+(Math.log(y2)-Math.log(y1))*t)]); } return pts; }
+        const m=(x1*x1+y1*y1-x2*x2-y2*y2)/(2*(x1-x2)), R=Math.hypot(x1-m,y1), a1=Math.atan2(y1,x1-m), a2=Math.atan2(y2,x2-m);
+        for(let i=0;i<=n;i++){ const t=i/n, a=a1+(a2-a1)*t; pts.push([m+R*Math.cos(a),R*Math.sin(a)]); } return pts; };
+      const line=(pts,upto,style,w)=>{ const n=pts.length-1, k=Math.floor(upto*n); if(upto<=0) return;
+        ctx.beginPath(); ctx.moveTo(sx(pts[0][0]),sy(pts[0][1])); for(let i=1;i<=k;i++) ctx.lineTo(sx(pts[i][0]),sy(pts[i][1]));
+        if(k<n){ const f=upto*n-k, [ax,ay]=pts[k], [cx2,cy2]=pts[k+1]; ctx.lineTo(sx(ax+(cx2-ax)*f),sy(ay+(cy2-ay)*f)); }
+        ctx.strokeStyle=style; ctx.lineWidth=w; ctx.stroke(); };
+      const at=(pts,u)=>{ const n=pts.length-1, k=Math.min(n-1,Math.floor(u*n)), f=u*n-k; return [pts[k][0]+(pts[k+1][0]-pts[k][0])*f,pts[k][1]+(pts[k+1][1]-pts[k][1])*f]; };
+      let finalShown=null;
+      for(const c0 of centres){
+        const z1=[c0+bx,by], zs=[c0+bx*g,by*g];                 // z and its inverse in the semicircle
+        const fx0=2*c0-zs[0], k=-Math.floor(fx0), m=c0+k/2, zf=[2*m-zs[0],zs[1]];   // mirror line chosen so the image lands in [0,1)
+        const P1=arcPts(z1[0],z1[1],zs[0],zs[1],80), P2=arcPts(zs[0],zs[1],zf[0],zf[1],80);
+        const isZ=c0===hit.c;
+        // fixed point of the half-turn and the vertical mirror
+        ctx.beginPath(); ctx.arc(sx(c0),sy(r),4.5*LW,0,7); ctx.strokeStyle=rgba(INK,0.85); ctx.lineWidth=1.3*LW; ctx.stroke();
+        ctx.setLineDash([2,5]); ctx.strokeStyle=rgba(INK,0.25+0.45*(s1>=1?1:0)); ctx.lineWidth=1.2*LW;
+        ctx.beginPath(); ctx.moveTo(sx(m),BASE); ctx.lineTo(sx(m),TOPPX); ctx.stroke(); ctx.setLineDash([]);
+        // full paths faint, travelled parts bright
+        ctx.setLineDash([3,5]); line(P1,1,rgba(col,0.5),1.2*LW); line(P2,1,rgba(col,0.5),1.2*LW); ctx.setLineDash([]);
+        line(P1,s1,rgba(INK,0.9),1.8*LW); line(P2,s2,rgba(INK,0.9),1.8*LW);
+        ctx.beginPath(); ctx.arc(sx(z1[0]),sy(z1[1]),5*LW,0,7); ctx.lineWidth=1.6*LW;
+        if(isZ){ ctx.fillStyle=rgba(INK,0.35); ctx.fill(); } else { ctx.fillStyle=PANEL; ctx.fill(); ctx.strokeStyle=col; ctx.stroke(); }
+        const pos=s2>0?at(P2,s2):at(P1,s1);
+        dot(sx(pos[0]),sy(pos[1]),5.5*LW,isZ?INK:col);
+        if(isZ) finalShown=zf;
+      }
+      if(iy>YMAX){ ctx.fillStyle=MUTED; ctx.font=`${fsz(13)}px "Source Sans 3",sans-serif`; ctx.textAlign='left';
+        ctx.fillText('the image is at height '+iy.toFixed(2)+', above the frame',L+14,BASE-12); }
+      const cname=frac(((hit.c%1)+1)%1);
+      const how=`a reflection in the semicircle, which raises it to height ${iy.toFixed(3)} (${gain.toFixed(1)} times higher), then a reflection in a vertical line (dotted; modulo 1 it is the line through the centre)`;
+      if(hit.q<=2) read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i lies in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)}). The relation is the half-turn about ${cname} + ${r.toFixed(3)}i (ringed): ${how}.`;
+      else read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i lies in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)}). The relation only controls the sum over the ${centres.length} translates z + a/${hit.q} (hollow); each makes the half-turn about the top of its own semicircle: ${how}.`;
+    } else {
+      dot(sx(zx),sy(zy),5.5*LW,AMBER);
+      read=`No semicircle shown contains z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i: none of these relations moves it up.`;
+    }
+  }
+  ctx.restore();
+
+  // axis
+  ctx.strokeStyle=MUTED; ctx.lineWidth=1.2*LW; ctx.beginPath(); ctx.moveTo(L,BASE+0.5); ctx.lineTo(W-R,BASE+0.5); ctx.stroke();
+  for(const g of gaps){
+    if(g[1]-g[0]>1e-7){ ctx.strokeStyle=AMBER; ctx.lineWidth=4*LW; ctx.beginPath(); ctx.moveTo(sx(g[0]),BASE); ctx.lineTo(sx(g[1]),BASE); ctx.stroke(); }
+    else { ctx.save(); ctx.shadowColor=AMBER; ctx.shadowBlur=14; dot(sx(g[0]),BASE,5*LW,AMBER); ctx.restore(); }
+  }
+  // coverage bar over [0,1]
+  const by0=BASE+16, bh=10*LW, xa0=Math.round(sx(0)), xb0=Math.round(sx(1));
+  for(let p=xa0;p<xb0;p++){ const x=wx(p+0.5); ctx.fillStyle=inside(dir,x)?TEAL:inside(all,x)?PURPLE:AMBER; ctx.fillRect(p,by0,1,bh); }
+  for(const g of gaps) if(g[1]-g[0]<=1e-7){ ctx.fillStyle=AMBER; ctx.fillRect(sx(g[0])-1.5*LW,by0-3,3*LW,bh+6); }
+  for(const g of gapsOf(dir)) if(g[1]-g[0]<=1e-7 && !gaps.some(h=>g[0]>=h[0]-1e-7&&g[0]<=h[1]+1e-7)){
+    ctx.fillStyle=PURPLE; ctx.fillRect(sx(g[0])-1.5*LW,by0-3,3*LW,bh+6);
+    ctx.save(); ctx.shadowColor=PURPLE; ctx.shadowBlur=12; dot(sx(g[0]),BASE,4.5*LW,PURPLE); ctx.restore();
+  }
+  ctx.fillStyle=MUTED; ctx.font=`${fsz(13)}px "Source Sans 3",sans-serif`; ctx.textAlign='right'; if(FS<1.3) ctx.fillText('covered',xa0-8,by0+9);
+  // the obstruction vector at the extra cusps
+  if(obsA>0) for(const p of cusps){ const X=sx(p.x);
+    ctx.globalAlpha=obsA; ctx.fillStyle=AMBER; ctx.font=`600 ${fsz(22)}px "Source Sans 3",sans-serif`; ctx.textAlign='center';
+    ctx.save(); ctx.shadowColor=AMBER; ctx.shadowBlur=10; ctx.fillText(p.v>0?'+':'−',X+(p.v>0?-1:1)*14*LW,BASE-8); ctx.restore(); ctx.globalAlpha=1; }
+
+  // ticks and cusp labels
+  const labY=by0+bh+8+fsz(16);
+  ctx.textAlign='center'; ctx.font=`${fsz(16)}px Spectral,Georgia,serif`;
+  const ticks=[[0,'0'],[0.5,'½'],[1,'1']];
+  for(const p of cusps){ if(2*p.a!==p.s) ticks.push([p.x,p.a+'/'+p.s,true]); }
+  for(const [x,lab,cusp] of ticks){
+    ctx.strokeStyle=cusp?INK:MUTED; ctx.lineWidth=1.2*LW; ctx.beginPath(); ctx.moveTo(sx(x),BASE-4); ctx.lineTo(sx(x),BASE+5); ctx.stroke();
+    ctx.fillStyle=cusp?INK:MUTED; ctx.fillText(lab,sx(x),labY);
+  }
+  if(cusps.length){ ctx.fillStyle=MUTED; ctx.font=`${fsz(14)}px "Source Sans 3",sans-serif`; ctx.textAlign='left';
+    // wrap onto a second line when it does not fit (phones)
+    const x0c=Math.max(L,sx(0)), maxw=W-R-x0c, words=('labelled: cusps of Γ₀('+Nint+') that share their denominator'+(obsA>0?'; ± = signs of the vector x':'')).split(' ');
+    let ln='', y=labY+8+fsz(14);
+    for(const w of words){ const tst=ln?ln+' '+w:w; if(ctx.measureText(tst).width>maxw&&ln){ ctx.fillText(ln,x0c,y); ln=w; y+=fsz(14)+4; } else ln=tst; }
+    ctx.fillText(ln,x0c,y); }
+
+  // HUD
+  ctx.textAlign='left'; ctx.fillStyle=INK; ctx.font=`500 ${fsz(30)}px Spectral,Georgia,serif`;
+  const hy=TOPPX+fsz(30)+6;
+  ctx.fillText('N = '+(settled?Nint:st.Nf.toFixed(1)),L+14,hy);
+  ctx.font=`${fsz(16)}px "Source Sans 3",sans-serif`; ctx.fillStyle=MUTED;
+  const qs=Math.round(st.Qf); ctx.fillText(qs<=1?'twists: q = 1 only':'twists: q ≤ '+qs,L+16,hy+fsz(16)+8);
+  if(fdA>0.01){
+    let area; const n=st.Nf;
+    if(n>4+1e-6) area='∞'; else if(settled) area=['π/3','π/2','2π/3','π'][Nint-1]; else area=(2*Math.asin(Math.sqrt(n)/2)).toFixed(2);
+    ctx.globalAlpha=fdA; ctx.fillStyle=INK; ctx.fillText('fundamental domain: area '+area,L+16,hy+2*(fsz(16)+8)); ctx.globalAlpha=1;
+  }
+  return {st,read};
+}
+
+// ---- UI -------------------------------------------------------------------
+const btnPlay=document.getElementById('btnPlay'), btnRestart=document.getElementById('btnRestart');
+const scrub=document.getElementById('scrub'), clock=document.getElementById('clock');
+const sN=document.getElementById('sN'), sQ=document.getElementById('sQ'), vN=document.getElementById('vN'), vQ=document.getElementById('vQ');
+const caps=[...document.querySelectorAll('#cap > div')], readout=document.getElementById('readout');
+const phases=document.getElementById('phases');
+PH.forEach(([t0,name],i)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=name;
+  b.addEventListener('click',()=>{ if(i===7){ toExplore(); return; } mode='tour'; t=t0+0.01; playing=true; }); phases.appendChild(b); });
+const phBtns=[...phases.children];
+
+function toExplore(){ const st=state(); mode='explore'; playing=false; NfEx=Math.round(st.Nf); QfEx=Math.max(1,Math.round(st.Qf)); }
+btnPlay.addEventListener('click',()=>{ if(mode==='explore'||t>=END){ mode='tour'; t=0; } playing=!playing; });
+btnRestart.addEventListener('click',()=>{ mode='tour'; t=0; playing=true; });
+scrub.addEventListener('input',()=>{ mode='tour'; t=+scrub.value; playing=false; });
+sN.addEventListener('input',()=>{ if(mode!=='explore') toExplore(); NfEx=+sN.value; });
+sQ.addEventListener('input',()=>{ if(mode!=='explore') toExplore(); QfEx=+sQ.value; });
+
+function setPointer(e){ const r=cv.getBoundingClientRect(); const px=(e.clientX-r.left)*W/r.width, py=(e.clientY-r.top)*H/r.height;
+  const x=wx(px), y=wy(py); pointer=(px>=L&&px<=W-R&&y>0.0015&&py>=TOPPX&&py<BASE)?{x,y,touch:e.pointerType==='touch'}:pointer&&pointer.touch?pointer:null; }
+cv.addEventListener('pointermove',setPointer); cv.addEventListener('pointerdown',setPointer);
+cv.addEventListener('pointerleave',e=>{ if(e.pointerType!=='touch') pointer=null; });
+
+let lastPh=-1, lastRead=null;
+function frame(now){
+  if(last===null) last=now; const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(playing&&mode==='tour'){ t+=dt; if(t>=END){ t=END; playing=false; toExplore(); } }
+  const {st,read}=draw(now);
+  const ph=st.ph;
+  if(ph!==lastPh){ caps.forEach((c,i)=>c.hidden=(i!==ph)); phBtns.forEach((b,i)=>b.toggleAttribute('aria-current',i===ph)); lastPh=ph; }
+  if(read!==lastRead){ readout.textContent=read; lastRead=read; }
+  btnPlay.textContent=playing?'Pause':'Play';
+  if(mode==='tour') scrub.value=t; clock.textContent=(mode==='tour'?t:END).toFixed(1)+' s';
+  const Ns=Math.round(st.Nf), Qs=Math.max(1,Math.round(st.Qf));
+  if(+sN.value!==Ns) sN.value=Ns; if(+sQ.value!==Qs) sQ.value=Qs; vN.textContent=Ns; vQ.textContent=Qs;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</html>

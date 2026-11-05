@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twistless Converse Visualized</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+:root{
+  --bg:#000000; --fg:#ececf1; --muted:#9aa3b5; --rule:#2b3140; --card:#0b0e13;
+  --teal:#2ccbd6; --purple:#bf5fff;
+  --display:"Spectral",Georgia,"Times New Roman",serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#000000; --fg:#ececf1; } }
+:root[data-theme="dark"]{ --bg:#000000; --fg:#ececf1; }
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);font-size:18px;line-height:1.55;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 56px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1000px;margin:0 auto}
+.back{padding-top:18px;font-size:15px}
+.back a{color:var(--muted);text-decoration:none}
+.back a:hover{color:var(--fg)}
+h1{font-weight:400;font-size:clamp(32px,5vw,46px);margin:22px 0 6px}
+.kicker{color:var(--muted);font-size:17px;margin:0 0 34px;max-width:62ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--rule);
+  border-radius:8px;overflow:hidden;transition:border-color .2s, transform .2s}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.card canvas{display:block;width:100%;aspect-ratio:16/9;background:#000}
+.card .body{padding:16px 18px 18px}
+.card .tag{font-size:14px;letter-spacing:.04em;color:var(--accent)}
+.card h2{font-weight:500;font-size:23px;margin:2px 0 6px}
+.card p{margin:0;color:var(--muted);font-size:16px}
+.c1{--accent:var(--teal)} .c2{--accent:var(--purple)}
+.paper{margin-top:30px;font-size:17px;color:var(--muted)}
+.paper em{color:var(--fg)}
+@media (prefers-reduced-motion: reduce){ .card{transition:none} .card:hover{transform:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="back"><a href="../">← Home</a></nav>
+  <h1>A twistless converse theorem</h1>
+  <p class="kicker">Pictures of how the functional equations of twists by Ramanujan sums pin down a modular form,
+  and where they fall short.</p>
+
+  <div class="cards">
+    <a class="card c2" href="hecke_gap.html">
+      <canvas id="thHecke" width="640" height="360" aria-label="Semicircles over the interval from 0 to 1 at level 9, with the two semicircles of the third twist highlighted in purple and the cusps one third and two thirds marked plus and minus"></canvas>
+      <div class="body">
+        <div class="tag">Why twists</div>
+        <h2>Hecke's gap</h2>
+        <p>The semicircles in which a functional equation lifts a point cover the line only for N ≤ 4.
+        Ramanujan-sum twists fill the gaps, except at the cusps of the excluded levels.</p>
+      </div>
+    </a>
+  </div>
+
+  <p class="paper">From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</p>
+</div>
+<script>
+// thumbnail: level 9, all q <= 12, the q = 3 semicircles bright, signs of the obstruction at 1/3 and 2/3
+(() => {
+const c=document.getElementById('thHecke'), dpr=Math.min(2,window.devicePixelRatio||1); c.width=640*dpr; c.height=360*dpr;
+const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#05070a'; ctx.fillRect(0,0,640,360);
+const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347';
+const gcd=(a,b)=>{while(b){[a,b]=[b,a%b];}return a;}, lcm=(a,b)=>a/gcd(a,b)*b;
+const rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;};
+const N=9, X0=-0.04, S=600/1.08, B=318, sx=x=>20+(x-X0)*S;
+const cs=[]; for(let q=1;q<=12;q++){ const r=1/Math.sqrt(lcm(N,q*q)); for(let a=0;a<=q;a++){ if(q===1?a>1:gcd(a,q)!==1) continue; cs.push({q,c:a/q,r}); } }
+cs.sort((a,b)=>(a.q===3)-(b.q===3)||(b.q>2)-(a.q>2)||b.r-a.r);
+ctx.save(); ctx.beginPath(); ctx.rect(0,0,640,B); ctx.clip();
+for(const k of cs){ const hi=k.q===3, col=k.q>2?PURPLE:TEAL;
+  ctx.beginPath(); ctx.arc(sx(k.c),B,k.r*S,Math.PI,2*Math.PI); ctx.closePath();
+  ctx.fillStyle=rgba(col,hi?0.12:k.q>2?0.03:0.05); ctx.fill(); ctx.lineWidth=hi?2.6:1.4; ctx.strokeStyle=rgba(col,hi?1:0.35); ctx.stroke(); }
+ctx.restore();
+ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(10,B+0.5); ctx.lineTo(630,B+0.5); ctx.stroke();
+ctx.fillStyle=AMBER; ctx.font='600 26px "Source Sans 3",system-ui,sans-serif'; ctx.textAlign='center';
+ctx.shadowColor=AMBER; ctx.shadowBlur=10; ctx.fillText('+',sx(1/3)-16,B-8); ctx.fillText('−',sx(2/3)+16,B-8);
+})();
+</script>
+</body>
+</html>
