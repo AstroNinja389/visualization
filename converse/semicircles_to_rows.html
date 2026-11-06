@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semicircles to Rows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<style>
+:root{
+  --bg:#000000; --panel:#0b0e13; --fg:#ececf1; --muted:#9aa3b5; --rule:#2b3140;
+  --teal:#2dd4bf; --purple:#bf5fff; --amber:#ffb347; --accent:#2dd4bf; --focus:#2dd4bf; color-scheme:dark;
+  --display:"Spectral",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; } }
+:root[data-theme="dark"]{ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; }
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1160px;margin:0 auto}
+.back{padding-top:18px;font-size:15px}
+.back a{color:var(--muted);text-decoration:none}
+.back a:hover{color:var(--fg)}
+header{padding:10px 0 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 24px}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);letter-spacing:-.01em;margin:0;line-height:1.05}
+.kicker{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;min-width:0;position:relative;margin-top:10px}
+.panel canvas{display:block;width:100%;height:auto;touch-action:manipulation;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 14px 12px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:2px}
+.cap{min-height:4.4em;margin-top:14px;font-family:var(--display);font-size:clamp(18px,2.2vw,22px);line-height:1.4;max-width:68ch}
+.cap > div{animation:fade .45s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.readout{min-height:1.6em;margin-top:6px;font-size:15px;color:var(--muted);max-width:90ch}
+.phases{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);margin-top:8px}
+.phases button{font:inherit;font-size:13px;background:none;border:0;color:var(--muted);cursor:pointer;padding:2px 4px;border-bottom:1px solid transparent}
+.phases button[aria-current]{color:var(--fg);border-bottom-color:var(--fg)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px}
+.ctl .group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ctl button{font:inherit;font-size:15px;font-weight:600;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:7px 16px;cursor:pointer;min-width:84px}
+.ctl button.secondary{background:none;color:var(--fg)}
+.ctl button.toggle{background:none;color:var(--muted);border-color:var(--rule);min-width:70px}
+.ctl button.toggle[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ctl label{color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent)}
+#scrub{width:min(360px,60vw)}
+.ctl button:focus-visible,input:focus-visible,.phases button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.thm{margin-top:40px;padding-top:22px;border-top:1px solid var(--rule);max-width:80ch;font-family:var(--display);font-size:17px;line-height:1.6}
+.thm p{margin:0 0 .9em}
+.thm .label{font-weight:600}
+.thm .note{color:var(--muted);font-size:16px}
+.thm .katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
+@media (prefers-reduced-motion: reduce){ .cap > div{animation:none} }
+</style>
+
+<div class="wrap">
+<nav class="back"><a href="index.html">← All visualizations</a></nav>
+<header>
+  <h1>From semicircles to rows</h1>
+  <span class="kicker">How the twisted relations become the spanning theorem</span>
+</header>
+
+<section class="panel">
+  <canvas id="cv" width="1100" height="660" aria-label="Top: the semicircles over the circle cut into Q cells. Bottom: the matrix of legal rows, one column per cell, built row by row; certificates combine rows into a single cell."></canvas>
+  <div class="legend">
+    <span><i style="background:var(--teal)"></i>q = 1, 2: a row with a single cell</span>
+    <span><i style="background:var(--purple)"></i>q ≥ 3: a row with one cell for each a/q</span>
+    <span><i style="background:var(--amber)"></i>cells no single relation reaches</span>
+  </div>
+</section>
+
+<div class="cap" id="cap">
+  <div data-ph="0">Fix \(Q=44\) and cut the circle \(\mathbb R/\mathbb Z\) into \(44\) cells. A point \(z\) just above the line has one translate \(z+\frac n{44}\) in every cell (the dots), and the values \(f(z+\frac n{44})\) form a vector with one entry per cell. Level \(N=11\).</div>
+  <div data-ph="1" hidden>The functional equation itself (\(q=1\)) moves a translate up when its whole cell lies under the semicircle at \(0\), of radius \(1/\sqrt{11}\). Each such cell \(u\) gives a <em>legal row</em> with a single \(1\): the value in that cell is controlled from above.</div>
+  <div data-ph="2" hidden>The twist by \(c_2\) does the same under the semicircle at \(\tfrac12\), of radius \(1/\sqrt{44}\): twelve more single-cell rows.</div>
+  <div data-ph="3" hidden>Six cells are left: \(13,14,15\) and their mirror images \(28,29,30\). No single relation reaches them. This is the gap of Hecke's picture, cut into cells.</div>
+  <div data-ph="4" hidden>For \(q\ge3\) the \(c_q\)-twist only controls the sum over all the translates at the fractions \(a/q\): its row \(R_{q,u}\) has a \(1\) in each of the cells \(u+44a/q\). It is legal when the cell \(u\) lies under the semicircle at \(0\) of radius \(1/\sqrt{\operatorname{lcm}(11,q^2)}\); then all those cells lie under the semicircles at the \(a/q\), and all of them move up together.</div>
+  <div data-ph="5" hidden>Untangling a gap cell: \(R_{4,2}\) has the cells \(13\) and \(35\), and \(R_{1,-9}\) is the cell \(35\) alone, so \(R_{4,2}-R_{1,-9}=e_{13}\). The value in cell \(13\) is the \(q=4\) sum minus a value that \(q=1\) controls. Cell \(14\) needs eleven rows, including the ten-cell row \(R_{11,-2}\).</div>
+  <div data-ph="6" hidden>The \(52\) legal rows have rank \(44\): every cell is a combination of legal rows, so every value near the real line is controlled from above. This is the spanning theorem at \(N=11\), \(Q=44\), and it is what the reconstruction lemma uses.</div>
+  <div data-ph="7" hidden>At \(N=9\), with \(Q=36\), the four cells touching \(\tfrac13\) and \(\tfrac23\) are each met by exactly one legal row: \(R_{3,-1}=e_{11}+e_{23}\) and \(R_{3,0}=e_{12}+e_{24}\). So \(+1\) beside \(\tfrac13\) and \(-1\) beside \(\tfrac23\) is invisible to every row; the rank is \(34\), and the kernel is spanned by \(e_{12}-e_{24}\) and \(e_{23}-e_{11}\).</div>
+  <div data-ph="8" hidden>Click a cell (at \(N=11\)) to see its combination of rows; hover over a row of the matrix to see its cells and semicircles.</div>
+</div>
+<div class="phases" id="phases"></div>
+<div class="readout mono" id="readout" aria-live="polite"></div>
+
+<div class="ctl">
+  <div class="group">
+    <button type="button" id="btnPlay">Pause</button>
+    <button type="button" id="btnRestart" class="secondary">Restart</button>
+  </div>
+  <div class="group"><input type="range" id="scrub" min="0" max="58" step="0.01" value="0" aria-label="Scrub through the tour"><span class="mono" id="clock">0.0 s</span></div>
+  <div class="group"><label>level</label><button type="button" class="toggle" id="b11" aria-pressed="true">N = 11</button><button type="button" class="toggle" id="b9" aria-pressed="false">N = 9</button></div>
+</div>
+
+<section class="thm">
+  <p><span class="label">The dictionary.</span> Fix \(N\) and \(Q\), and for a point \(z=x+iy\) with \(x\) in the cell \([\tfrac jQ,\tfrac{j+1}Q]\) let \(v(n)=f\bigl(z+\frac{n-j}{Q}\bigr)\), one entry for each cell \(n\bmod Q\). The functional equation of the \(c_q\)-twist relates \(\sum_{\gcd(a,q)=1}f(\beta+\frac aq)\) to the same sum at \(-1/(\ell_N(q)\beta)\), with \(\ell_N(q)=\operatorname{lcm}(N,q^2)\). Taking \(\beta=z+\frac{u-j}{Q}\), the left side is
+  $$\sum_{\gcd(a,q)=1}v\Bigl(u+\frac{aQ}{q}\Bigr)=\langle R^Q_{q,u},v\rangle,\qquad R^Q_{q,u}=\sum_{\gcd(a,q)=1}e_{u+aQ/q},$$
+  and the right side is higher up exactly when \(\beta\) is under the semicircle \(|\beta|<1/\sqrt{\ell_N(q)}\). Requiring this for every point of the cell \(u\) is the legality condition \(\max\{|u|,|u+1|\}<Q/\sqrt{\ell_N(q)}\).</p>
+  <p><span class="label">Spanning.</span> If \(e_j=\sum A_j(q,u)R^Q_{q,u}\) over legal rows, then \(f(z)=v(j)=\sum A_j(q,u)\langle R^Q_{q,u},v\rangle\) is a combination of sums that the twisted functional equations express through values of \(f\) higher up. The spanning theorem says such a \(Q\) exists exactly when \(16\nmid N\) and \(p^2\nmid N\) for every odd prime \(p\).</p>
+  <p class="note">Ranks are exact over \(\mathbb Q\) for every prefix of the rows (52 rows at \(N=11\), 80 at \(N=9\)). The combinations shown at \(N=11\) are the certificate of the cascade page: each minimises \(\sum|A_j(q,u)|\varphi(q)\), all coefficients are \(\pm1\), and each identity was checked in exact arithmetic. At \(N=9\), \(Q=36\), the statement about the four cells was checked on all 80 legal rows.</p>
+</section>
+<footer>
+  <p>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>. The dots are the translates of one point \(z\) at height \(0.025\), one per cell; the short arrows mark the translates a relation moves up.</p>
+</footer>
+</div>
+
+<script>
+const LINK={"n11":{"N":11,"Q":44,"rows":[{"q":1,"u":-13,"ell":11,"cols":[31]},{"q":1,"u":-12,"ell":11,"cols":[32]},{"q":1,"u":-11,"ell":11,"cols":[33]},{"q":1,"u":-10,"ell":11,"cols":[34]},{"q":1,"u":-9,"ell":11,"cols":[35]},{"q":1,"u":-8,"ell":11,"cols":[36]},{"q":1,"u":-7,"ell":11,"cols":[37]},{"q":1,"u":-6,"ell":11,"cols":[38]},{"q":1,"u":-5,"ell":11,"cols":[39]},{"q":1,"u":-4,"ell":11,"cols":[40]},{"q":1,"u":-3,"ell":11,"cols":[41]},{"q":1,"u":-2,"ell":11,"cols":[42]},{"q":1,"u":-1,"ell":11,"cols":[43]},{"q":1,"u":0,"ell":11,"cols":[0]},{"q":1,"u":1,"ell":11,"cols":[1]},{"q":1,"u":2,"ell":11,"cols":[2]},{"q":1,"u":3,"ell":11,"cols":[3]},{"q":1,"u":4,"ell":11,"cols":[4]},{"q":1,"u":5,"ell":11,"cols":[5]},{"q":1,"u":6,"ell":11,"cols":[6]},{"q":1,"u":7,"ell":11,"cols":[7]},{"q":1,"u":8,"ell":11,"cols":[8]},{"q":1,"u":9,"ell":11,"cols":[9]},{"q":1,"u":10,"ell":11,"cols":[10]},{"q":1,"u":11,"ell":11,"cols":[11]},{"q":1,"u":12,"ell":11,"cols":[12]},{"q":2,"u":-6,"ell":44,"cols":[16]},{"q":2,"u":-5,"ell":44,"cols":[17]},{"q":2,"u":-4,"ell":44,"cols":[18]},{"q":2,"u":-3,"ell":44,"cols":[19]},{"q":2,"u":-2,"ell":44,"cols":[20]},{"q":2,"u":-1,"ell":44,"cols":[21]},{"q":2,"u":0,"ell":44,"cols":[22]},{"q":2,"u":1,"ell":44,"cols":[23]},{"q":2,"u":2,"ell":44,"cols":[24]},{"q":2,"u":3,"ell":44,"cols":[25]},{"q":2,"u":4,"ell":44,"cols":[26]},{"q":2,"u":5,"ell":44,"cols":[27]},{"q":4,"u":-3,"ell":176,"cols":[8,30]},{"q":4,"u":-2,"ell":176,"cols":[9,31]},{"q":4,"u":-1,"ell":176,"cols":[10,32]},{"q":4,"u":0,"ell":176,"cols":[11,33]},{"q":4,"u":1,"ell":176,"cols":[12,34]},{"q":4,"u":2,"ell":176,"cols":[13,35]},{"q":11,"u":-3,"ell":121,"cols":[1,5,9,13,17,21,25,29,33,37]},{"q":11,"u":-2,"ell":121,"cols":[2,6,10,14,18,22,26,30,34,38]},{"q":11,"u":-1,"ell":121,"cols":[3,7,11,15,19,23,27,31,35,39]},{"q":11,"u":0,"ell":121,"cols":[4,8,12,16,20,24,28,32,36,40]},{"q":11,"u":1,"ell":121,"cols":[5,9,13,17,21,25,29,33,37,41]},{"q":11,"u":2,"ell":121,"cols":[6,10,14,18,22,26,30,34,38,42]},{"q":22,"u":-1,"ell":484,"cols":[1,5,9,13,17,25,29,33,37,41]},{"q":22,"u":0,"ell":484,"cols":[2,6,10,14,18,26,30,34,38,42]}],"cert":[[[13,1,1]],[[14,1,1]],[[15,1,1]],[[16,1,1]],[[17,1,1]],[[18,1,1]],[[19,1,1]],[[20,1,1]],[[21,1,1]],[[22,1,1]],[[23,1,1]],[[24,1,1]],[[25,1,1]],[[4,-1,1],[43,1,1]],[[3,-1,1],[7,-1,1],[15,-1,1],[19,-1,1],[21,1,1],[23,-1,1],[28,-1,1],[32,-1,1],[36,-1,1],[38,-1,1],[45,1,1]],[[0,-1,1],[4,-1,1],[8,-1,1],[16,-1,1],[20,-1,1],[24,-1,1],[29,-1,1],[33,-1,1],[37,-1,1],[46,1,1]],[[26,1,1]],[[27,1,1]],[[28,1,1]],[[29,1,1]],[[30,1,1]],[[31,1,1]],[[32,1,1]],[[33,1,1]],[[34,1,1]],[[35,1,1]],[[36,1,1]],[[37,1,1]],[[1,-1,1],[5,-1,1],[9,-1,1],[17,-1,1],[21,-1,1],[25,-1,1],[26,-1,1],[30,-1,1],[34,-1,1],[47,1,1]],[[2,-1,1],[4,1,1],[6,-1,1],[10,-1,1],[14,-1,1],[18,-1,1],[22,-1,1],[27,-1,1],[35,-1,1],[43,-1,1],[50,1,1]],[[21,-1,1],[38,1,1]],[[0,1,1]],[[1,1,1]],[[2,1,1]],[[3,1,1]],[[4,1,1]],[[5,1,1]],[[6,1,1]],[[7,1,1]],[[8,1,1]],[[9,1,1]],[[10,1,1]],[[11,1,1]],[[12,1,1]]],"ranks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,39,39,39,39,40,41,42,43,44,44,44,44,44],"theta":0.9799118698777317},"n9":{"N":9,"Q":36,"rows":[{"q":1,"u":-11,"ell":9,"cols":[25]},{"q":1,"u":-10,"ell":9,"cols":[26]},{"q":1,"u":-9,"ell":9,"cols":[27]},{"q":1,"u":-8,"ell":9,"cols":[28]},{"q":1,"u":-7,"ell":9,"cols":[29]},{"q":1,"u":-6,"ell":9,"cols":[30]},{"q":1,"u":-5,"ell":9,"cols":[31]},{"q":1,"u":-4,"ell":9,"cols":[32]},{"q":1,"u":-3,"ell":9,"cols":[33]},{"q":1,"u":-2,"ell":9,"cols":[34]},{"q":1,"u":-1,"ell":9,"cols":[35]},{"q":1,"u":0,"ell":9,"cols":[0]},{"q":1,"u":1,"ell":9,"cols":[1]},{"q":1,"u":2,"ell":9,"cols":[2]},{"q":1,"u":3,"ell":9,"cols":[3]},{"q":1,"u":4,"ell":9,"cols":[4]},{"q":1,"u":5,"ell":9,"cols":[5]},{"q":1,"u":6,"ell":9,"cols":[6]},{"q":1,"u":7,"ell":9,"cols":[7]},{"q":1,"u":8,"ell":9,"cols":[8]},{"q":1,"u":9,"ell":9,"cols":[9]},{"q":1,"u":10,"ell":9,"cols":[10]},{"q":2,"u":-5,"ell":36,"cols":[13]},{"q":2,"u":-4,"ell":36,"cols":[14]},{"q":2,"u":-3,"ell":36,"cols":[15]},{"q":2,"u":-2,"ell":36,"cols":[16]},{"q":2,"u":-1,"ell":36,"cols":[17]},{"q":2,"u":0,"ell":36,"cols":[18]},{"q":2,"u":1,"ell":36,"cols":[19]},{"q":2,"u":2,"ell":36,"cols":[20]},{"q":2,"u":3,"ell":36,"cols":[21]},{"q":2,"u":4,"ell":36,"cols":[22]},{"q":3,"u":-11,"ell":9,"cols":[1,13]},{"q":3,"u":-10,"ell":9,"cols":[2,14]},{"q":3,"u":-9,"ell":9,"cols":[3,15]},{"q":3,"u":-8,"ell":9,"cols":[4,16]},{"q":3,"u":-7,"ell":9,"cols":[5,17]},{"q":3,"u":-6,"ell":9,"cols":[6,18]},{"q":3,"u":-5,"ell":9,"cols":[7,19]},{"q":3,"u":-4,"ell":9,"cols":[8,20]},{"q":3,"u":-3,"ell":9,"cols":[9,21]},{"q":3,"u":-2,"ell":9,"cols":[10,22]},{"q":3,"u":-1,"ell":9,"cols":[11,23]},{"q":3,"u":0,"ell":9,"cols":[12,24]},{"q":3,"u":1,"ell":9,"cols":[13,25]},{"q":3,"u":2,"ell":9,"cols":[14,26]},{"q":3,"u":3,"ell":9,"cols":[15,27]},{"q":3,"u":4,"ell":9,"cols":[16,28]},{"q":3,"u":5,"ell":9,"cols":[17,29]},{"q":3,"u":6,"ell":9,"cols":[18,30]},{"q":3,"u":7,"ell":9,"cols":[19,31]},{"q":3,"u":8,"ell":9,"cols":[20,32]},{"q":3,"u":9,"ell":9,"cols":[21,33]},{"q":3,"u":10,"ell":9,"cols":[22,34]},{"q":4,"u":-2,"ell":144,"cols":[7,25]},{"q":4,"u":-1,"ell":144,"cols":[8,26]},{"q":4,"u":0,"ell":144,"cols":[9,27]},{"q":4,"u":1,"ell":144,"cols":[10,28]},{"q":6,"u":-5,"ell":36,"cols":[1,25]},{"q":6,"u":-4,"ell":36,"cols":[2,26]},{"q":6,"u":-3,"ell":36,"cols":[3,27]},{"q":6,"u":-2,"ell":36,"cols":[4,28]},{"q":6,"u":-1,"ell":36,"cols":[5,29]},{"q":6,"u":0,"ell":36,"cols":[6,30]},{"q":6,"u":1,"ell":36,"cols":[7,31]},{"q":6,"u":2,"ell":36,"cols":[8,32]},{"q":6,"u":3,"ell":36,"cols":[9,33]},{"q":6,"u":4,"ell":36,"cols":[10,34]},{"q":9,"u":-3,"ell":81,"cols":[1,5,13,17,25,29]},{"q":9,"u":-2,"ell":81,"cols":[2,6,14,18,26,30]},{"q":9,"u":-1,"ell":81,"cols":[3,7,15,19,27,31]},{"q":9,"u":0,"ell":81,"cols":[4,8,16,20,28,32]},{"q":9,"u":1,"ell":81,"cols":[5,9,17,21,29,33]},{"q":9,"u":2,"ell":81,"cols":[6,10,18,22,30,34]},{"q":12,"u":-2,"ell":144,"cols":[1,13,19,31]},{"q":12,"u":-1,"ell":144,"cols":[2,14,20,32]},{"q":12,"u":0,"ell":144,"cols":[3,15,21,33]},{"q":12,"u":1,"ell":144,"cols":[4,16,22,34]},{"q":18,"u":-1,"ell":324,"cols":[1,9,13,21,25,33]},{"q":18,"u":0,"ell":324,"cols":[2,10,14,22,26,34]}],"ranks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,32,32,32,32,32,32,32,32,32,32,33,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,34],"x":[12,24],"both":1}};
+(() => {
+const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347', INK='#ececf1', MUTED='#9aa3b5', RULE='#2b3140', PANEL='#0b0e13';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const W=1100, H=660;
+let dpr=1;
+function resize(){ dpr=Math.min(2,window.devicePixelRatio||1); cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+resize(); window.addEventListener('resize',()=>{ if(Math.min(2,window.devicePixelRatio||1)!==dpr) resize(); });
+
+const L=104, R=176, PW=W-L-R, BASE=300, TOP=8, CY=310, CH=16, MY0=356, MY1=596, SY=612, SH=18, YP=0.025;
+const xOf=x=>L+x*PW, yOf=y=>BASE-y*PW;
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;};
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+function rgba(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
+const qcol=q=>q<=2?TEAL:PURPLE;
+
+function prep(d){
+  d.rows.forEach(r=>{ r.set=new Set(r.cols); });
+  d.qs=[...new Set(d.rows.map(r=>r.q))].sort((a,b)=>a-b);
+  d.blocks=d.qs.map(q=>{ const idx=d.rows.map((r,i)=>r.q===q?i:-1).filter(i=>i>=0); return {q,start:idx[0],end:idx[idx.length-1]+1}; });
+  const direct=new Set(); d.rows.forEach(r=>{ if(r.q<=2) r.cols.forEach(c=>direct.add(c)); });
+  d.gap=[]; for(let c=0;c<d.Q;c++) if(!direct.has(c)) d.gap.push(c);
+  return d;
+}
+const D11=prep(LINK.n11), D9=prep(LINK.n9);
+
+// ---- tour -----------------------------------------------------------------
+const BUILD=[[6.5,12.5,0,26],[13.5,16.5,26,38],[21,24,38,44],[24.5,27.5,44,50],[28,30,50,52]];
+const PH=[[0,'Cells'],[6,'q = 1'],[13,'q = 2'],[17,'The gap'],[20.5,'Linked rows'],[31,'Untangling'],[43,'Spanning'],[48,'N = 9'],[58,'Explore']];
+const END=58;
+function phaseAt(t){ if(t>=END) return 8; let p=0; for(let i=0;i<PH.length;i++) if(t>=PH[i][0]-1e-9) p=i; return p; }
+function tourState(t){
+  const ph=phaseAt(t);
+  if(ph===7){ const k=Math.round(clamp((t-48.5)/2.5,0,1)*D9.rows.length); return {D:D9,ph,shown:k,cur:k<D9.rows.length?k-1:-1,obs:ease(clamp(t-51.5,0,1))}; }
+  let shown=0, cur=-1;
+  for(const [t0,t1,r0,r1] of BUILD){ if(t>=t0){ const f=clamp((t-t0)/(t1-t0),0,1); shown=Math.floor(r0+(r1-r0)*f+1e-9); if(t<=t1+0.35&&shown>0) cur=shown-1; } }
+  if(t<6.5) shown=0;
+  const s={D:D11,ph,shown,cur,gapA:t>=17?1:0};
+  if(ph===3) s.gapPulse=true;
+  if(ph===5){ const c=t<36.5?13:14, t0=c===13?32:37, t1=c===13?34:41.5, n=D11.cert[c].length; s.cert={cell:c,k:Math.round(clamp((t-t0)/(t1-t0),0,1)*n)}; s.cur=-1; }
+  if(ph===6){ s.cur=-1; s.sweep=clamp((t-43.5)/3.5,0,1); }
+  return s;
+}
+
+// ---- state ------------------------------------------------------------------
+let t=0, playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, mode='tour', last=null;
+let exN=11, exCell=14, hoverRow=-1;
+function state(){
+  if(mode==='tour') return tourState(t);
+  const D=exN===11?D11:D9;
+  const s={D,ph:8,shown:D.rows.length,cur:hoverRow,gapA:1};
+  if(exN===11&&exCell>=0) s.cert={cell:exCell,k:D11.cert[exCell].length};
+  if(exN===9) s.obs=1;
+  return s;
+}
+
+// ---- drawing ----------------------------------------------------------------
+function draw(){
+  const s=state(), D=s.D, Q=D.Q, cw=PW/Q;
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle=PANEL; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic'; ctx.globalAlpha=1; ctx.setLineDash([]); ctx.shadowBlur=0;
+  const cur=s.cur>=0?D.rows[s.cur]:null;
+  // certificate rows (used, revealed)
+  let used=null, sum=null;
+  if(s.cert){ used=new Map(); sum=new Array(Q).fill(0);
+    D11.cert[s.cert.cell].forEach(([ri,num,den],k)=>{ if(k<s.cert.k){ used.set(ri,num/den); for(const c of D.rows[ri].cols) sum[c]+=num/den; } }); }
+  const obsCells=s.obs?new Set([11,12,23,24]):null;
+  const obsRows=s.obs?new Set(D.rows.map((r,i)=>(r.set.has(12)||r.set.has(11))?i:-1).filter(i=>i>=0)):null;
+
+  // --- plane: semicircles of the q that have legal rows
+  ctx.save(); ctx.beginPath(); ctx.rect(L,TOP,PW,BASE-TOP); ctx.clip();
+  const hq=cur?cur.q:null;
+  const certQ=used?new Set([...used.keys()].map(i=>D.rows[i].q)):null;
+  for(const q of D.qs.slice().reverse()){
+    const r=1/Math.sqrt(lcm(D.N,q*q));
+    const bright=(hq===q)||(certQ&&certQ.has(q))||(obsRows&&q===3);
+    for(let a=0;a<q;a++){ if(gcd(a,q)!==1) continue;
+      for(const k of [-1,0,1]){ const c=a/q+k; if(c+r<0||c-r>1) continue;
+        ctx.beginPath(); ctx.arc(xOf(c),BASE,r*PW,Math.PI,2*Math.PI); ctx.closePath();
+        ctx.fillStyle=rgba(qcol(q),bright?0.10:0.03); ctx.fill();
+        ctx.lineWidth=bright?2.2:1.2; ctx.strokeStyle=rgba(qcol(q),bright?0.95:0.28); ctx.stroke(); } }
+  }
+  // translates of z: one per cell
+  for(let n=0;n<Q;n++){ ctx.fillStyle=rgba(INK,0.5); ctx.beginPath(); ctx.arc(xOf((n+0.5)/Q),yOf(YP),2.2,0,7); ctx.fill(); }
+  // highlighted row: shadows, translates in its cells, arrows up
+  const showRow=(row,col,alpha)=>{
+    const r=1/Math.sqrt(row.ell);
+    for(let a=0;a<row.q;a++){ if(gcd(a,row.q)!==1) continue; for(const k of [-1,0,1]){ const c=a/row.q+k;
+      ctx.fillStyle=rgba(col,0.35*alpha); ctx.fillRect(xOf(c-r),BASE-5,(2*r)*PW,5); } }
+    for(const c of row.cols){ const x=xOf((c+0.5)/Q), y=yOf(YP);
+      ctx.fillStyle=rgba(col,alpha); ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+      ctx.strokeStyle=rgba(col,alpha); ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(x,y-7); ctx.lineTo(x,y-34); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y-38); ctx.lineTo(x-4,y-31); ctx.lineTo(x+4,y-31); ctx.closePath(); ctx.fill(); }
+  };
+  if(cur) showRow(cur,qcol(cur.q),1);
+  if(used) for(const [ri] of used) showRow(D.rows[ri],qcol(D.rows[ri].q),0.75);
+  if(s.cert){ const x=xOf((s.cert.cell+0.5)/Q); ctx.strokeStyle=INK; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,yOf(YP),7,0,7); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle=MUTED; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(L,BASE+0.5); ctx.lineTo(L+PW,BASE+0.5); ctx.stroke();
+  // HUD
+  ctx.fillStyle=INK; ctx.font='500 28px Spectral,Georgia,serif'; ctx.fillText(`N = ${D.N}`,L+12,TOP+32);
+  ctx.font='15px "Source Sans 3",sans-serif'; ctx.fillStyle=MUTED; ctx.fillText(`Q = ${Q} cells`,L+14,TOP+54);
+
+  // --- cell strip
+  const shownRows=D.rows.slice(0,s.shown);
+  const teal=new Set(), purp=new Set(); shownRows.forEach(r=>r.cols.forEach(c=>(r.q<=2?teal:purp).add(c)));
+  for(let c=0;c<Q;c++){
+    let col=null, a=0.55;
+    if(teal.has(c)) col=TEAL; else if(s.gapA&&D.gap.includes(c)) { col=AMBER; a=s.gapPulse?0.45+0.35*Math.sin(performance.now()/250):0.6; } else if(purp.has(c)) col=PURPLE;
+    if(s.sweep!==undefined&&c<s.sweep*Q){ col=INK; a=0.7; }
+    ctx.fillStyle=col?rgba(col,a):rgba(MUTED,0.12); ctx.fillRect(xOf(c/Q)+0.5,CY,cw-1,CH);
+  }
+  if(cur) for(const c of cur.cols){ ctx.strokeStyle=qcol(cur.q); ctx.lineWidth=2; ctx.strokeRect(xOf(c/Q)+1,CY-1,cw-2,CH+2); }
+  if(s.cert){ ctx.strokeStyle=INK; ctx.lineWidth=2.2; ctx.strokeRect(xOf(s.cert.cell/Q)+1,CY-2,cw-2,CH+4); }
+  if(obsCells) for(const c of obsCells){ ctx.strokeStyle=AMBER; ctx.lineWidth=2.2; ctx.strokeRect(xOf(c/Q)+1,CY-2,cw-2,CH+4); }
+  ctx.fillStyle=MUTED; ctx.font='13px "Source Sans 3",sans-serif'; ctx.textAlign='right'; ctx.fillText('cells',L-8,CY+12);
+  ctx.textAlign='center'; ctx.font='14px Spectral,Georgia,serif';
+  const ticks=[[0,'0'],[0.25,'¼'],[0.5,'½'],[0.75,'¾'],[1,'1']]; if(D.N===9) ticks.push([1/3,'⅓'],[2/3,'⅔']);
+  for(const [x,lab] of ticks){ ctx.fillStyle=MUTED; ctx.fillText(lab,xOf(x),CY+CH+16); }
+  // cell numbers of the highlighted cells
+  ctx.font='11px "IBM Plex Mono",monospace'; ctx.fillStyle=INK;
+  const nums=new Set(); if(cur) cur.cols.forEach(c=>nums.add(c)); if(s.cert) nums.add(s.cert.cell); if(obsCells) obsCells.forEach(c=>nums.add(c));
+  if(s.ph===3) D.gap.forEach(c=>nums.add(c));
+  for(const c of nums) ctx.fillText(String(c),xOf((c+0.5)/Q),CY+CH+30);
+
+  // --- matrix
+  const rh=(MY1-MY0)/D.rows.length;
+  if(obsCells) for(const c of obsCells){ ctx.fillStyle=rgba(AMBER,0.13*(s.obs||1)); ctx.fillRect(xOf(c/Q),MY0,cw,MY1-MY0); }
+  const labels=[];
+  for(let i=0;i<s.shown;i++){
+    const r=D.rows[i]; let a=1;
+    if(used) a=used.has(i)?1:0.13; else if(obsRows) a=obsRows.has(i)?1:1-0.8*s.obs; else if(cur&&mode==='explore') a=i===s.cur?1:0.35; else if(s.cur>=0) a=i===s.cur?1:0.55;
+    ctx.fillStyle=rgba(qcol(r.q),a);
+    for(const c of r.cols) ctx.fillRect(xOf(c/Q)+(cw>8?1:0.3),MY0+i*rh+(rh>4?0.6:0),cw-(cw>8?2:0.6),Math.max(1,rh-(rh>4?1.2:0.2)));
+    if(used&&used.has(i)){ const v=used.get(i); labels.push({y:MY0+i*rh+rh/2,text:`${v>0?'+':'−'}R(${r.q},${r.u})`}); }
+    if(obsRows&&obsRows.has(i)&&s.obs>0.5) labels.push({y:MY0+i*rh+rh/2,text:`R(${r.q},${r.u})`});
+  }
+  // row labels in the left margin, spread apart, with leader lines to their rows
+  if(labels.length){
+    const ys=labels.map(l=>l.y);
+    for(let k=1;k<ys.length;k++) ys[k]=Math.max(ys[k],ys[k-1]+14);
+    if(ys[ys.length-1]>MY1){ ys[ys.length-1]=MY1; for(let k=ys.length-2;k>=0;k--) ys[k]=Math.min(ys[k],ys[k+1]-14); }
+    ctx.font='11.5px "IBM Plex Mono",monospace'; ctx.textAlign='right';
+    labels.forEach((l,k)=>{ ctx.strokeStyle=rgba(MUTED,0.6); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(L-7,ys[k]); ctx.lineTo(L-1,l.y); ctx.stroke();
+      ctx.fillStyle=INK; ctx.fillText(l.text,L-9,ys[k]+4); });
+  }
+  ctx.strokeStyle=rgba(MUTED,0.45); ctx.lineWidth=1; ctx.strokeRect(L-0.5,MY0-0.5,PW+1,MY1-MY0+1);
+  // block labels
+  let lastY=-1e9; ctx.textAlign='left';
+  for(const b of D.blocks){ if(b.start>=s.shown) continue; const y0=MY0+b.start*rh;
+    ctx.strokeStyle=rgba(MUTED,0.3); ctx.beginPath(); ctx.moveTo(L,y0+0.5); ctx.lineTo(L+PW,y0+0.5); ctx.stroke();
+    const yc=MY0+(b.start+Math.min(b.end,s.shown))/2*rh+4; if(yc-lastY<13) continue; lastY=yc;
+    ctx.fillStyle=qcol(b.q); ctx.font='13px "IBM Plex Mono",monospace'; ctx.fillText(`q=${b.q}`,L+PW+10,yc);
+    ctx.fillStyle=MUTED; ctx.font='12px "Source Sans 3",sans-serif'; ctx.fillText(`${b.end-b.start} row${b.end-b.start>1?'s':''}`,L+PW+62,yc); }
+  if(!used&&!obsRows&&s.cur<0&&s.shown===0){ ctx.fillStyle=MUTED; ctx.font='14px "Source Sans 3",sans-serif'; ctx.textAlign='center'; ctx.fillText('legal rows will appear here, one column per cell',L+PW/2,(MY0+MY1)/2); }
+  ctx.save(); ctx.translate(L-60,(MY0+MY1)/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle=MUTED; ctx.font='13px "Source Sans 3",sans-serif'; if(!used&&!obsRows) ctx.fillText('legal rows',0,0); ctx.restore();
+
+  // --- running sum of a certificate
+  if(sum){
+    ctx.fillStyle=MUTED; ctx.font='13px "Source Sans 3",sans-serif'; ctx.textAlign='right'; ctx.fillText('sum',L-8,SY+13);
+    for(let c=0;c<Q;c++){ const v=Math.round(sum[c]*1000)/1000; const x=xOf(c/Q);
+      if(v===0){ ctx.strokeStyle=rgba(MUTED,0.25); ctx.lineWidth=1; ctx.strokeRect(x+0.5,SY,cw-1,SH); continue; }
+      ctx.fillStyle=rgba(v>0?(c===s.cert.cell?INK:TEAL):PURPLE,0.85); ctx.fillRect(x+0.5,SY,cw-1,SH);
+      ctx.fillStyle=PANEL; ctx.font='600 11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillText((v>0?'+':'−')+Math.abs(v),x+cw/2,SY+13); }
+    if(s.cert.k===D11.cert[s.cert.cell].length){ ctx.fillStyle=INK; ctx.font='14px "IBM Plex Mono",monospace'; ctx.textAlign='left'; ctx.fillText(`= e${s.cert.cell}`,L+PW+10,SY+14); }
+  }
+  // --- obstruction signs
+  if(obsRows&&s.obs>0){ ctx.globalAlpha=s.obs; ctx.font='600 20px "Source Sans 3",sans-serif'; ctx.textAlign='center'; ctx.fillStyle=AMBER;
+    for(const [c,sg] of [[12,'+'],[24,'−']]) ctx.fillText(sg,xOf((c+0.5)/Q),SY+16);
+    ctx.font='13px "Source Sans 3",sans-serif'; ctx.textAlign='left'; ctx.fillStyle=MUTED; ctx.fillText('x = e12 − e24',L+PW+10,SY+14); ctx.globalAlpha=1; }
+  // rank
+  if(s.shown>0){ const rk=D.ranks[s.shown-1]; ctx.fillStyle=INK; ctx.font='14px "IBM Plex Mono",monospace'; ctx.textAlign='left';
+    ctx.fillText(`rank ${rk} / ${Q}`,L+PW+10,MY0-10); }
+  let read='';
+  if(cur) read=`row R(${cur.q}, ${cur.u}): cells ${cur.cols.join(', ')}; legal since max(|u|,|u+1|) = ${Math.max(Math.abs(cur.u),Math.abs(cur.u+1))} < Q/√lcm(N,q²) = ${(Q/Math.sqrt(cur.ell)).toFixed(2)}`;
+  else if(s.cert) read=`cell ${s.cert.cell}: e${s.cert.cell} = `+D11.cert[s.cert.cell].map(([ri,n,d])=>`${n>0?'+':'−'}R(${D.rows[ri].q},${D.rows[ri].u})`).join(' ');
+  return {s,read};
+}
+
+// ---- UI -------------------------------------------------------------------
+const btnPlay=document.getElementById('btnPlay'), btnRestart=document.getElementById('btnRestart');
+const scrub=document.getElementById('scrub'), clock=document.getElementById('clock');
+const b11=document.getElementById('b11'), b9=document.getElementById('b9');
+const caps=[...document.querySelectorAll('#cap > div')], readout=document.getElementById('readout');
+const phases=document.getElementById('phases');
+PH.forEach(([t0,name],i)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=name;
+  b.addEventListener('click',()=>{ if(i===8){ toExplore(); return; } mode='tour'; t=t0+0.01; playing=true; }); phases.appendChild(b); });
+const phBtns=[...phases.children];
+function toExplore(n){ mode='explore'; playing=false; if(n) exN=n; else exN=(state().D.N); }
+btnPlay.addEventListener('click',()=>{ if(mode==='explore'||t>=END){ mode='tour'; t=0; } playing=!playing; });
+btnRestart.addEventListener('click',()=>{ mode='tour'; t=0; playing=true; });
+scrub.addEventListener('input',()=>{ mode='tour'; t=+scrub.value; playing=false; });
+b11.addEventListener('click',()=>toExplore(11)); b9.addEventListener('click',()=>toExplore(9));
+function canvasXY(e){ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]; }
+cv.addEventListener('click',e=>{ const [px,py]=canvasXY(e); if(px<L||px>L+PW||py>CY+CH+4) return;
+  if(mode!=='explore') toExplore(); if(exN!==11) return; exCell=Math.min(43,Math.floor((px-L)/PW*44)); hoverRow=-1; });
+cv.addEventListener('pointermove',e=>{ if(mode!=='explore') return; const [px,py]=canvasXY(e); const D=exN===11?D11:D9;
+  if(px>=L&&px<=L+PW&&py>=MY0&&py<MY1){ hoverRow=Math.floor((py-MY0)/((MY1-MY0)/D.rows.length)); if(exN===11) exCell=-1; } else hoverRow=-1; });
+
+let lastPh=-1, lastRead=null;
+function frame(now){
+  if(last===null) last=now; const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(playing&&mode==='tour'){ t+=dt; if(t>=END){ t=END; playing=false; toExplore(9); } }
+  const {s,read}=draw();
+  if(s.ph!==lastPh){ caps.forEach((c,i)=>c.hidden=(i!==s.ph)); phBtns.forEach((b,i)=>b.toggleAttribute('aria-current',i===s.ph)); lastPh=s.ph; }
+  if(read!==lastRead){ readout.textContent=read; lastRead=read; }
+  btnPlay.textContent=playing?'Pause':'Play';
+  if(mode==='tour') scrub.value=t; clock.textContent=(mode==='tour'?t:END).toFixed(1)+' s';
+  b11.setAttribute('aria-pressed',String(s.D.N===11)); b9.setAttribute('aria-pressed',String(s.D.N===9));
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</html>

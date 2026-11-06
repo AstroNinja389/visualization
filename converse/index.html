@@ -56,6 +56,15 @@ h1{font-weight:400;font-size:clamp(32px,5vw,46px);margin:22px 0 6px}
         Ramanujan-sum twists fill the gaps, except at the cusps of the excluded levels.</p>
       </div>
     </a>
+    <a class="card c1" href="semicircles_to_rows.html">
+      <canvas id="thRows" width="640" height="360" aria-label="Semicircles at level 11 over a strip of 44 cells, above the matrix of legal rows with one column per cell"></canvas>
+      <div class="body">
+        <div class="tag">The spanning theorem</div>
+        <h2>From semicircles to rows</h2>
+        <p>Cut the circle into cells: each twisted relation becomes a row of 0s and 1s, and combining
+        rows untangles the cells in the gap. At level 9 the cells beside ⅓ and ⅔ stay tied together.</p>
+      </div>
+    </a>
   </div>
 
   <p class="paper">From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</p>
@@ -79,6 +88,27 @@ ctx.restore();
 ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(10,B+0.5); ctx.lineTo(630,B+0.5); ctx.stroke();
 ctx.fillStyle=AMBER; ctx.font='600 26px "Source Sans 3",system-ui,sans-serif'; ctx.textAlign='center';
 ctx.shadowColor=AMBER; ctx.shadowBlur=10; ctx.fillText('+',sx(1/3)-16,B-8); ctx.fillText('−',sx(2/3)+16,B-8);
+})();
+// thumbnail: level 11, Q = 44: semicircles with q | 44, the strip of cells, the matrix of legal rows
+(() => {
+const c=document.getElementById('thRows'), dpr=Math.min(2,window.devicePixelRatio||1); c.width=640*dpr; c.height=360*dpr;
+const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#05070a'; ctx.fillRect(0,0,640,360);
+const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347';
+const gcd=(a,b)=>{while(b){[a,b]=[b,a%b];}return a;}, lcm=(a,b)=>a/gcd(a,b)*b;
+const rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;};
+const N=11, Q=44, X=40, PW=560, B=150, sx=x=>X+x*PW;
+const rows=[]; for(let q=1;q<=Q;q++){ if(Q%q) continue; const ell=lcm(N,q*q);
+  for(let u=-Q;u<=Q;u++){ const m=Math.max(Math.abs(u),Math.abs(u+1)); if(m*m*ell<Q*Q){ const cols=[]; for(let a=0;a<q;a++) if(gcd(a,q)===1) cols.push(((u+a*Q/q)%Q+Q)%Q); rows.push({q,cols,ell}); } } }
+const qs=[...new Set(rows.map(r=>r.q))];
+ctx.save(); ctx.beginPath(); ctx.rect(X,0,PW,B); ctx.clip();
+for(const q of qs.slice().reverse()){ const r=1/Math.sqrt(lcm(N,q*q)); for(let a=0;a<=q;a++){ if(q===1?false:gcd(a,q)!==1) continue; if(q>1&&a===q) continue;
+  ctx.beginPath(); ctx.arc(sx(a/q),B,r*PW,Math.PI,2*Math.PI); ctx.closePath(); ctx.fillStyle=rgba(q>2?PURPLE:TEAL,0.06); ctx.fill();
+  ctx.lineWidth=1.6; ctx.strokeStyle=rgba(q>2?PURPLE:TEAL,q>2?0.7:0.9); ctx.stroke(); } }
+ctx.restore();
+const direct=new Set(); rows.forEach(r=>{ if(r.q<=2) r.cols.forEach(c=>direct.add(c)); });
+const cw=PW/Q; for(let j=0;j<Q;j++){ ctx.fillStyle=rgba(direct.has(j)?TEAL:AMBER,0.6); ctx.fillRect(sx(j/Q)+0.5,B+6,cw-1,9); }
+const y0=B+24, rh=(350-y0)/rows.length;
+rows.forEach((r,i)=>{ ctx.fillStyle=r.q>2?PURPLE:TEAL; for(const j of r.cols) ctx.fillRect(sx(j/Q)+0.6,y0+i*rh+0.3,cw-1.2,Math.max(1,rh-0.6)); });
 })();
 </script>
 </body>
