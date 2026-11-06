@@ -34,6 +34,9 @@ h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);l
 .legend{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 14px 12px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{display:inline-block;width:18px;height:8px;border-radius:2px}
+.legend .qkey{gap:3px;flex-wrap:wrap;color:var(--muted)}
+.qkey b{display:inline-block;min-width:19px;padding:1px 0;border-radius:3px;text-align:center;font:600 12px/1.35 var(--mono);color:#05070a;transition:opacity .3s}
+.qkey b.off{opacity:.22}
 .cap{min-height:5.9em;margin-top:14px;font-family:var(--display);font-size:clamp(17px,2vw,20px);line-height:1.4;max-width:70ch}
 .cap ul{margin:0;padding-left:1.15em}
 .cap li{margin:0 0 .3em}
@@ -81,8 +84,8 @@ footer li{margin:0 0 .3em}
 <section class="panel">
   <canvas id="cv" width="1100" height="680" aria-label="Upper half-plane over the interval from 0 to 1 with the semicircles inside which the functional equations raise a point; gaps on the real line are highlighted"></canvas>
   <div class="legend">
-    <span><i style="background:var(--teal)"></i>q = 1, 2: one translate, the relation moves a point up</span>
-    <span><i style="background:var(--purple)"></i>q ≥ 3: the relation only controls a sum over a/q</span>
+    <span class="qkey" id="qkey" aria-label="colour of the semicircles centred at a/q, for q = 1 to 16">q =</span>
+    <span>bar under the axis: the smallest q whose semicircles cover the point</span>
     <span><i style="background:var(--amber)"></i>not covered, or two semicircles only touch</span>
     <span><i style="background:rgba(236,236,241,.28)"></i>fundamental domain (q = 1 only)</span>
   </div>
@@ -137,6 +140,7 @@ footer li{margin:0 0 .3em}
     <button type="button" id="btnRestart" class="secondary">Restart</button>
   </div>
   <div class="group"><input type="range" id="scrub" min="0" max="48" step="0.01" value="0" aria-label="Scrub through the tour"><span class="mono" id="clock">0.0 s</span></div>
+  <div class="group"><label for="sSpeed">speed</label><input type="range" id="sSpeed" min="0.25" max="2" step="0.25" value="0.75"><span class="mono" id="vSpeed">0.75×</span></div>
   <div class="group"><label for="sN">N</label><input type="range" id="sN" min="1" max="60" step="1" value="1"><span class="mono" id="vN">1</span></div>
   <div class="group"><label for="sQ">q ≤</label><input type="range" id="sQ" min="1" max="16" step="1" value="1"><span class="mono" id="vQ">1</span></div>
 </div>
@@ -170,7 +174,7 @@ footer li{margin:0 0 .3em}
 <footer>
   <ul>
     <li>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</li>
-    <li>Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\).</li>
+    <li>Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\), one colour per \(q\): green for \(q=1\), through blue and violet, to red for \(q=16\). Amber is kept for the gaps.</li>
     <li>Between integer values of \(N\) the radii are interpolated; the label shows the nearest integer.</li>
     <li>The moving points follow the half-turns exactly: a reflection in the semicircle, then in a vertical line (through the centre or half an integer away, the same map modulo 1).</li>
   </ul>
@@ -180,6 +184,9 @@ footer li{margin:0 0 .3em}
 <script>
 (() => {
 const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347', INK='#ececf1', MUTED='#9aa3b5', PANEL='#0b0e13';
+// one colour per q: OKLCH hue 145 + 230 log q / log 16 (green, cyan, blue, violet, pink, red), skipping the amber of the gaps
+const QCOL=['#5bc663','#0dd7e3','#1ab8ff','#5896fd','#8389fe','#a283f9','#c388fb','#d685f0','#e280e2','#eb7dd3','#f37ac5','#f878b8','#fc77ab','#fc749b','#fb718d','#fc7182'];
+const qcol=q=>QCOL[Math.min(q,16)-1];
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 const W=1100, H0=680;
 let H=H0, dpr=1, FS=1, LW=1;
@@ -230,7 +237,7 @@ function key(K,t){
 function phaseAt(t){ if(t>=END) return 7; let p=0; for(let i=0;i<PH.length;i++) if(t>=PH[i][0]-1e-9) p=i; return p; }
 
 // ---- state ----------------------------------------------------------------
-let t=0, playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, mode='tour', last=null;
+let t=0, speed=0.75, anim=0, playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, mode='tour', last=null;
 let NfEx=9, QfEx=12, pointer=null;
 function state(){
   if(mode==='explore') return {Nf:NfEx, Qf:QfEx, ph:7, obs:1};
@@ -282,6 +289,9 @@ function draw(now){
   const dir=merge(cs.filter(c=>c.q<=2).map(c=>[c.c-c.r,c.c+c.r]));
   const all=merge(cs.map(c=>[c.c-c.r,c.c+c.r]));
   const gaps=gapsOf(all);
+  const byQ=[]; for(const c of cs){ (byQ[c.q]=byQ[c.q]||[]).push([c.c-c.r,c.c+c.r]); }
+  const qList=[]; byQ.forEach((v,q)=>{ if(v){ byQ[q]=merge(v); qList.push(q); } });
+  const leastQ=x=>{ for(const q of qList) if(inside(byQ[q],x)) return q; return 0; };
   const cusps=settled?extraCusps(Nint):[];
   // obstruction highlight: circles that contain an extra cusp, and their partners (same q)
   const obsQ=new Set();
@@ -317,7 +327,7 @@ function draw(now){
   }
   const order=cs.slice().sort((a,b)=>(b.q>2)-(a.q>2)||b.r-a.r);
   for(const c of order){
-    const linked=c.q>2, col=linked?PURPLE:TEAL;
+    const linked=c.q>2, col=qcol(c.q);
     const fade=linked?clamp(1-0.045*(c.q-3),0.45,1):1;
     const hl=hit&&hit.q===c.q;
     const ob=obsQ.has(c.q);
@@ -333,9 +343,9 @@ function draw(now){
     for(const q of obsQ){
       const grp=cs.filter(c=>c.q===q&&c.c>=-1e-9&&c.c<=1+1e-9).sort((a,b)=>a.c-b.c); if(grp.length<2) continue;
       const yy=sy(grp[0].r);
-      ctx.globalAlpha=obsA; ctx.setLineDash([4,5]); ctx.strokeStyle=PURPLE; ctx.lineWidth=1.4*LW;
+      ctx.globalAlpha=obsA; ctx.setLineDash([4,5]); ctx.strokeStyle=qcol(q); ctx.lineWidth=1.4*LW;
       ctx.beginPath(); ctx.moveTo(sx(grp[0].c),yy); ctx.lineTo(sx(grp[grp.length-1].c),yy); ctx.stroke(); ctx.setLineDash([]);
-      for(const c of grp) dot(sx(c.c),yy,3.2*LW,PURPLE);
+      for(const c of grp) dot(sx(c.c),yy,3.2*LW,qcol(q));
       const terms=grp.map(c=>'f(z+'+frac(c.c)+')');
       const lab=grp.length<=3?terms.join(' + '):`Σ f(z + a/${q}),  gcd(a, ${q}) = 1`;
       ctx.fillStyle=INK; ctx.font=`italic ${fsz(17)}px Spectral,Georgia,serif`; ctx.textAlign='center';
@@ -352,11 +362,11 @@ function draw(now){
   if(probe&&probe.y>0){
     const zx=probe.x, zy=probe.y;
     if(hit){
-      const col=hit.q>2?PURPLE:TEAL, r=hit.r, bx=zx-hit.c, by=zy, b2=bx*bx+by*by, g=r*r/b2;
+      const col=qcol(hit.q), r=hit.r, bx=zx-hit.c, by=zy, b2=bx*bx+by*by, g=r*r/b2;
       const iy=by*g, gain=g;
       const centres=[]; for(let A=0;A<hit.q;A++) if(gcd(A,hit.q)===1) centres.push(A/hit.q);
       if(hit.q===1) centres[0]=hit.c;
-      const cyc=(now/1000)%4.4;
+      const cyc=anim%4.4;
       const s1=ease(clamp((cyc-0.5)/1.4,0,1)), s2=ease(clamp((cyc-2.3)/1.2,0,1));
       const arcPts=(x1,y1,x2,y2,n)=>{ // geodesic from (x1,y1) to (x2,y2)
         const pts=[]; if(Math.abs(x1-x2)<1e-9){ for(let i=0;i<=n;i++){ const t=i/n; pts.push([x1,Math.exp(Math.log(y1)+(Math.log(y2)-Math.log(y1))*t)]); } return pts; }
@@ -407,13 +417,14 @@ function draw(now){
   }
   // coverage bar over [0,1]
   const by0=BASE+16, bh=10*LW, xa0=Math.round(sx(0)), xb0=Math.round(sx(1));
-  for(let p=xa0;p<xb0;p++){ const x=wx(p+0.5); ctx.fillStyle=inside(dir,x)?TEAL:inside(all,x)?PURPLE:AMBER; ctx.fillRect(p,by0,1,bh); }
+  for(let p=xa0;p<xb0;p++){ const q=leastQ(wx(p+0.5)); ctx.fillStyle=q?qcol(q):AMBER; ctx.fillRect(p,by0,1,bh); }
   for(const g of gaps) if(g[1]-g[0]<=1e-7){ ctx.fillStyle=AMBER; ctx.fillRect(sx(g[0])-1.5*LW,by0-3,3*LW,bh+6); }
   for(const g of gapsOf(dir)) if(g[1]-g[0]<=1e-7 && !gaps.some(h=>g[0]>=h[0]-1e-7&&g[0]<=h[1]+1e-7)){
-    ctx.fillStyle=PURPLE; ctx.fillRect(sx(g[0])-1.5*LW,by0-3,3*LW,bh+6);
-    ctx.save(); ctx.shadowColor=PURPLE; ctx.shadowBlur=12; dot(sx(g[0]),BASE,4.5*LW,PURPLE); ctx.restore();
+    const col=qcol(leastQ(g[0])||3);   // q <= 2 only touch here; the smallest q that covers the point
+    ctx.fillStyle=col; ctx.fillRect(sx(g[0])-1.5*LW,by0-3,3*LW,bh+6);
+    ctx.save(); ctx.shadowColor=col; ctx.shadowBlur=12; dot(sx(g[0]),BASE,4.5*LW,col); ctx.restore();
   }
-  ctx.fillStyle=MUTED; ctx.font=`${fsz(13)}px "Source Sans 3",sans-serif`; ctx.textAlign='right'; if(FS<1.3) ctx.fillText('covered',xa0-8,by0+9);
+  ctx.fillStyle=MUTED; ctx.font=`${fsz(13)}px "Source Sans 3",sans-serif`; ctx.textAlign='right'; if(FS<1.3) ctx.fillText('least q',xa0-8,by0+9);
   // the obstruction vector at the extra cusps
   if(obsA>0) for(const p of cusps){ const X=sx(p.x);
     ctx.globalAlpha=obsA; ctx.fillStyle=AMBER; ctx.font=`600 ${fsz(22)}px "Source Sans 3",sans-serif`; ctx.textAlign='center';
@@ -465,6 +476,12 @@ btnRestart.addEventListener('click',()=>{ mode='tour'; t=0; playing=true; });
 scrub.addEventListener('input',()=>{ mode='tour'; t=+scrub.value; playing=false; });
 sN.addEventListener('input',()=>{ if(mode!=='explore') toExplore(); NfEx=+sN.value; });
 sQ.addEventListener('input',()=>{ if(mode!=='explore') toExplore(); QfEx=+sQ.value; });
+const sSpeed=document.getElementById('sSpeed'), vSpeed=document.getElementById('vSpeed');
+sSpeed.addEventListener('input',()=>{ speed=+sSpeed.value; vSpeed.textContent=speed+'×'; });
+// colour key in the legend; the q not yet drawn are dimmed
+const qkey=document.getElementById('qkey');
+QCOL.forEach((c,i)=>{ const b=document.createElement('b'); b.textContent=i+1; b.style.background=c; qkey.appendChild(b); });
+const qChips=[...qkey.querySelectorAll('b')]; let lastQs=-1;
 
 function setPointer(e){ const r=cv.getBoundingClientRect(); const px=(e.clientX-r.left)*W/r.width, py=(e.clientY-r.top)*H/r.height;
   const x=wx(px), y=wy(py); pointer=(px>=L&&px<=W-R&&y>0.0015&&py>=TOPPX&&py<BASE)?{x,y,touch:e.pointerType==='touch'}:pointer&&pointer.touch?pointer:null; }
@@ -474,7 +491,8 @@ cv.addEventListener('pointerleave',e=>{ if(e.pointerType!=='touch') pointer=null
 let lastPh=-1, lastRead=null;
 function frame(now){
   if(last===null) last=now; const dt=Math.min(0.1,(now-last)/1000); last=now;
-  if(playing&&mode==='tour'){ t+=dt; if(t>=END){ t=END; playing=false; toExplore(); } }
+  anim+=dt*speed;
+  if(playing&&mode==='tour'){ t+=dt*speed; if(t>=END){ t=END; playing=false; toExplore(); } }
   const {st,read}=draw(now);
   const ph=st.ph;
   if(ph!==lastPh){ caps.forEach((c,i)=>c.hidden=(i!==ph)); phBtns.forEach((b,i)=>b.toggleAttribute('aria-current',i===ph)); lastPh=ph; }
@@ -483,6 +501,7 @@ function frame(now){
   if(mode==='tour') scrub.value=t; clock.textContent=(mode==='tour'?t:END).toFixed(1)+' s';
   const Ns=Math.round(st.Nf), Qs=Math.max(1,Math.round(st.Qf));
   if(+sN.value!==Ns) sN.value=Ns; if(+sQ.value!==Qs) sQ.value=Qs; vN.textContent=Ns; vQ.textContent=Qs;
+  if(Qs!==lastQs){ qChips.forEach((b,i)=>b.classList.toggle('off',i+1>Qs)); lastQs=Qs; }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

@@ -48,7 +48,7 @@ h1{font-weight:400;font-size:clamp(32px,5vw,46px);margin:22px 0 6px}
 
   <div class="cards">
     <a class="card c2" href="hecke_gap.html">
-      <canvas id="thHecke" width="640" height="360" aria-label="Semicircles over the interval from 0 to 1 at level 9, with the two semicircles of the third twist highlighted in purple and the cusps one third and two thirds marked plus and minus"></canvas>
+      <canvas id="thHecke" width="640" height="360" aria-label="Semicircles over the interval from 0 to 1 at level 9, coloured by q, with the two semicircles of the third twist highlighted and the cusps one third and two thirds marked plus and minus"></canvas>
       <div class="body">
         <div class="tag">Hecke's converse theorem</div>
         <h2>Why twists?</h2>
@@ -81,9 +81,10 @@ const N=9, X0=-0.04, S=600/1.08, B=318, sx=x=>20+(x-X0)*S;
 const cs=[]; for(let q=1;q<=12;q++){ const r=1/Math.sqrt(lcm(N,q*q)); for(let a=0;a<=q;a++){ if(q===1?a>1:gcd(a,q)!==1) continue; cs.push({q,c:a/q,r}); } }
 cs.sort((a,b)=>(a.q===3)-(b.q===3)||(b.q>2)-(a.q>2)||b.r-a.r);
 ctx.save(); ctx.beginPath(); ctx.rect(0,0,640,B); ctx.clip();
-for(const k of cs){ const hi=k.q===3, col=k.q>2?PURPLE:TEAL;
+const QCOL=['#5bc663','#0dd7e3','#1ab8ff','#5896fd','#8389fe','#a283f9','#c388fb','#d685f0','#e280e2','#eb7dd3','#f37ac5','#f878b8','#fc77ab','#fc749b','#fb718d','#fc7182'];   // one colour per q, as on the page
+for(const k of cs){ const hi=k.q===3, col=QCOL[k.q-1];
   ctx.beginPath(); ctx.arc(sx(k.c),B,k.r*S,Math.PI,2*Math.PI); ctx.closePath();
-  ctx.fillStyle=rgba(col,hi?0.12:k.q>2?0.03:0.05); ctx.fill(); ctx.lineWidth=hi?2.6:1.4; ctx.strokeStyle=rgba(col,hi?1:0.35); ctx.stroke(); }
+  ctx.fillStyle=rgba(col,hi?0.12:k.q>2?0.03:0.05); ctx.fill(); ctx.lineWidth=hi?2.6:1.4; ctx.strokeStyle=rgba(col,hi?1:0.45); ctx.stroke(); }
 ctx.restore();
 ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(10,B+0.5); ctx.lineTo(630,B+0.5); ctx.stroke();
 ctx.fillStyle=AMBER; ctx.font='600 26px "Source Sans 3",system-ui,sans-serif'; ctx.textAlign='center';
