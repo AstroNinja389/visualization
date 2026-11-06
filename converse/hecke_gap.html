@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hecke's Gap</title>
+<title>Why Twists?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -62,8 +62,8 @@ footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
 <div class="wrap">
 <nav class="back"><a href="index.html">← All visualizations</a></nav>
 <header>
-  <h1>Hecke's gap</h1>
-  <span class="kicker">Why twists are needed, and where they fail</span>
+  <h1>Why twists?</h1>
+  <span class="kicker">Where one functional equation stops, and what the Ramanujan-sum twists add</span>
 </header>
 
 <section class="panel">
@@ -108,7 +108,7 @@ footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
   <p class="note">A legal row is a relation used on the cell \([\tfrac uQ,\tfrac{u+1}{Q}]\) shifted to each \(a/q\): the cell has to lie inside the shadow of the semicircle. When the rows span, every value of \(f\) near the real line is a combination of values strictly higher up. At an excluded level the points \(a/s\) (\(s=p\) with \(p^2\mid N\), or \(s=4\) with \(16\mid N\)) lie inside exactly one semicircle each, the one with \(q=s\) centred there; this was checked in exact arithmetic for all \(q\le200\) at \(N=9,16,18,25,27,36\).</p>
 </section>
 <footer>
-  <p>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>. Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\); \(N\) and \(q\) change in whole steps, and the drawing crossfades from one value to the next. The moving points follow the half-turns exactly, as two reflections along geodesics: in the semicircle, then in a vertical line; that line is drawn through the centre or a point half an integer away, which is the same map modulo 1.</p>
+  <p>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>. Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\); between integer values of \(N\) the radii are interpolated. The moving points follow the half-turns exactly, as two reflections along geodesics: in the semicircle, then in a vertical line; that line is drawn through the centre or a point half an integer away, which is the same map modulo 1.</p>
 </footer>
 </div>
 
@@ -128,16 +128,11 @@ function resize(){
 resize(); window.addEventListener('resize',resize);
 const fsz=b=>Math.round(b*(b>=24?Math.min(FS,1.8):FS));
 
-// ---- camera: zooms out when the q = 1 semicircle would not fit ------------
+// ---- camera: keeps the q = 1 semicircle within the lower 60% of the frame ---
 const L=40, R=40, BASE=568, TOPPX=10;
 const S0=(W-L-R)/1.24, YMAX0=(BASE-TOPPX)/S0;
 let CS=S0, CX0=-0.12, YMAX=YMAX0;
-let camZoom=null, camLast=0;
-const zoomFor=N=>Math.max(1,(1/Math.sqrt(N))/(0.6*YMAX0));
-function setCamera(N,now){
-  const target=zoomFor(N);
-  if(camZoom===null) camZoom=target; else { const dt=Math.min(0.1,Math.max(0,(now-camLast)/1000)); camZoom+=(target-camZoom)*(1-Math.exp(-dt/0.22)); }
-  camLast=now; CS=S0/camZoom; CX0=0.5-(W-L-R)/(2*CS); YMAX=(BASE-TOPPX)/CS; }
+function setCamera(Nf){ const zoom=Math.max(1,(1/Math.sqrt(Nf))/(0.6*YMAX0)); CS=S0/zoom; CX0=0.5-(W-L-R)/(2*CS); YMAX=(BASE-TOPPX)/CS; }
 const sx=x=>L+(x-CX0)*CS, sy=y=>BASE-y*CS;
 const wx=px=>CX0+(px-L)/CS, wy=py=>(BASE-py)/CS;
 const XR=()=>[CX0,CX0+(W-L-R)/CS];
@@ -149,42 +144,41 @@ const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
 const lerp=(a,b,t)=>a+(b-a)*t;
 function rgba(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
 
-function radius(q,N){ return 1/Math.sqrt(lcm(N,q*q)); }
+function radius(q,Nf){
+  const n0=Math.floor(Nf+1e-9), t=Nf-n0;
+  const r0=1/Math.sqrt(lcm(n0,q*q));
+  if(t<1e-6) return r0;
+  return lerp(r0,1/Math.sqrt(lcm(n0+1,q*q)),t);
+}
 
 // ---- timeline -------------------------------------------------------------
-// N and q are integers: they change in steps (the drawing crossfades over a quarter second)
-const NS=[[0,1],[2.5,2],[5,3],[7.5,4],[11,5],[18,6],[19.5,7],[21,8],[22.5,9],[25.5,10],[27,11],[39.5,10],[40.3,9]];
-const QS=[[0,1],[15,2],[30.5,3],[31,4],[31.5,5],[32,6],[32.5,7],[33,8],[33.5,9],[34,10],[34.5,11],[35,12]];
+const KN=[[0,1],[2,1],[3,2],[4.5,2],[5.5,3],[7,3],[8,4],[10,4],[11.5,5],[17.5,5],[18.3,6],[19,6],[19.8,7],[20.5,7],[21.3,8],[22,8],[22.8,9],[25,9],[25.8,10],[26.5,10],[27.3,11],[39,11],[40.5,9],[48,9]];
+const KQ=[[0,1],[14,1],[15.5,2],[30,2],[36,12],[48,12]];
 const PH=[[0,'Hecke, N ≤ 4'],[10,'The gap'],[14,'Twist by c₂'],[17.5,'Up to N = 9'],[25,'N = 11'],[30,'Linked twists'],[39,'The obstruction'],[48,'Explore']];
 const END=48, OBS0=41;
 const PROBE=[null,[0.46,0.15],[0.46,0.15],[0.22,0.04],[0.31,0.012],[0.31,0.012],[0.383,0.22],null];  // phase 0: tied to the radius, see draw()
-function stepAt(K,t){ let v=K[0][1]; for(const [t0,v0] of K) if(t>=t0) v=v0; return v; }
+function key(K,t){
+  if(t<=K[0][0]) return K[0][1];
+  for(let i=0;i<K.length-1;i++){ const [t0,v0]=K[i],[t1,v1]=K[i+1]; if(t<=t1) return lerp(v0,v1,ease((t-t0)/(t1-t0))); }
+  return K[K.length-1][1];
+}
 function phaseAt(t){ if(t>=END) return 7; let p=0; for(let i=0;i<PH.length;i++) if(t>=PH[i][0]-1e-9) p=i; return p; }
 
 // ---- state ----------------------------------------------------------------
 let t=0, playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, mode='tour', last=null;
 let NfEx=9, QfEx=12, pointer=null;
 function state(){
-  if(mode==='explore') return {N:NfEx, Q:QfEx, ph:7, obs:1};
-  return {N:stepAt(NS,t), Q:stepAt(QS,t), ph:phaseAt(t), obs:ease(clamp(t-OBS0,0,1))};
+  if(mode==='explore') return {Nf:NfEx, Qf:QfEx, ph:7, obs:1};
+  return {Nf:key(KN,t), Qf:key(KQ,t), ph:phaseAt(t), obs:ease(clamp(t-OBS0,0,1))};
 }
-// crossfades: the semicircles of the previous N fade out while those of the new N fade in;
-// a newly added q fades in at full size
-let fadeN=null; const qSince={};
-function updateFades(st,now){
-  const first=fadeN===null;
-  if(first) fadeN={prev:null,cur:st.N,t0:now};
-  else if(st.N!==fadeN.cur) fadeN={prev:fadeN.cur,cur:st.N,t0:now};
-  for(let q=2;q<=16;q++){ if(q<=st.Q){ if(qSince[q]===undefined) qSince[q]=first?now-1e4:now; } else delete qSince[q]; }
-}
-const qAlpha=(q,now)=>q===1?1:(qSince[q]===undefined?0:ease((now-qSince[q])/300));
 
-function circlesFor(N,Qmax,now,mul){
-  const out=[]; const [xa,xb]=XR();
-  for(let q=1;q<=Math.min(16,Qmax);q++){
-    const r=radius(q,N), al=qAlpha(q,now)*mul;
+function circlesFor(Nf,Qf){
+  const out=[]; const qtop=Math.min(16,Math.ceil(Qf-1e-9)); const [xa,xb]=XR();
+  for(let q=1;q<=qtop;q++){
+    const al=q===1?1:clamp(Qf-(q-1),0,1); if(al<=0) continue;
+    const r=radius(q,Nf)*(q===1?1:ease(al));
     for(let A=0;A<q;A++){ if(gcd(A,q)!==1) continue;
-      for(let k=Math.floor(xa)-1;k<=Math.ceil(xb)+1;k++){ const c=A/q+k; if(c-r<xb+0.02&&c+r>xa-0.02) out.push({q,A,c,r,alpha:al}); }
+      for(let k=Math.floor(xa)-1;k<=Math.ceil(xb)+1;k++){ const c=A/q+k; if(c-r<xb+0.02&&c+r>xa-0.02) out.push({q,A,c,r,alpha:q===1?1:ease(al)}); }
     }
   }
   return out;
@@ -217,20 +211,18 @@ function frac(c){
 function dot(x,y,r,col){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=col; ctx.fill(); }
 
 function draw(now){
-  const st=state(); updateFades(st,now); setCamera(st.N,now);
-  const Nint=st.N, settled=true;
-  const fN=fadeN.prev===null?1:ease((now-fadeN.t0)/260);
-  const cs=circlesFor(st.N,st.Q,now,fN);                       // the current N: coverage, probe and labels use these
-  const csOld=fN<1?circlesFor(fadeN.prev,st.Q,now,1-fN):[];    // the previous N, fading out
+  const st=state(); setCamera(st.Nf);
+  const Nint=Math.round(st.Nf); const settled=Math.abs(st.Nf-Nint)<0.02;
+  const cs=circlesFor(st.Nf,st.Qf);
   const dir=merge(cs.filter(c=>c.q<=2).map(c=>[c.c-c.r,c.c+c.r]));
   const all=merge(cs.map(c=>[c.c-c.r,c.c+c.r]));
   const gaps=gapsOf(all);
   const cusps=settled?extraCusps(Nint):[];
   // obstruction highlight: circles that contain an extra cusp, and their partners (same q)
   const obsQ=new Set();
-  if(cusps.length&&st.obs>0) for(const p of cusps) for(const c of cs) if(Math.abs(p.x-c.c)<c.r-1e-9) obsQ.add(c.q);
+  if(cusps.length&&st.obs>0) for(const p of cusps) for(const c of cs) if(Math.abs(p.x-c.c)<c.r-1e-9&&c.alpha>0.9) obsQ.add(c.q);
   const obsA=obsQ.size?st.obs:0;
-  const fdA=st.Q<=1?1:1-qAlpha(2,now);
+  const fdA=1-ease(clamp(st.Qf-1,0,1));
   const [xa,xb]=XR();
 
   ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -240,16 +232,16 @@ function draw(now){
   // probe / pointer
   let probe=null;
   if(pointer) probe=pointer;
-  else if(mode==='tour'&&st.ph===0){ const r1=radius(1,st.N); probe={x:0.606*r1,y:0.35*r1,auto:true,c:0}; }
+  else if(mode==='tour'&&st.ph===0){ const r1=radius(1,st.Nf); probe={x:0.606*r1,y:0.35*r1,auto:true,c:0}; }
   else if(mode==='tour'&&PROBE[st.ph]) probe={x:PROBE[st.ph][0],y:PROBE[st.ph][1],auto:true};
   let hit=null;
-  if(probe){ for(const c of cs){ const dx=probe.x-c.c; if(dx*dx+probe.y*probe.y<c.r*c.r && (!hit||c.q<hit.q||(c.q===hit.q&&Math.abs(dx)<Math.abs(probe.x-hit.c)))) hit=c; }
+  if(probe){ for(const c of cs){ const dx=probe.x-c.c; if(dx*dx+probe.y*probe.y<c.r*c.r && c.alpha>0.6 && (!hit||c.q<hit.q||(c.q===hit.q&&Math.abs(dx)<Math.abs(probe.x-hit.c)))) hit=c; }
     if(probe.c!==undefined){ const pref=cs.find(c=>Math.abs(c.c-probe.c)<1e-9&&c.q===1); if(pref&&(probe.x-pref.c)**2+probe.y**2<pref.r*pref.r) hit=pref; } }
 
   ctx.save(); ctx.beginPath(); ctx.rect(L,TOPPX,W-L-R,BASE-TOPPX); ctx.clip();
   // fundamental domain (q = 1 only)
   if(fdA>0.01){
-    const r=radius(1,st.N), RR=r*CS;
+    const r=radius(1,st.Nf), RR=r*CS;
     ctx.beginPath(); ctx.moveTo(sx(0),TOPPX); ctx.lineTo(sx(0),sy(r));
     if(r>0.5){ const a=Math.acos(0.5/r); ctx.arc(sx(0),BASE,RR,-Math.PI/2,-a,false); ctx.arc(sx(1),BASE,RR,a-Math.PI,-Math.PI/2,false); }
     else { ctx.arc(sx(0),BASE,RR,-Math.PI/2,0,false); ctx.lineTo(sx(1-r),BASE); ctx.arc(sx(1),BASE,RR,Math.PI,1.5*Math.PI,false); }
@@ -258,7 +250,7 @@ function draw(now){
     ctx.setLineDash([5,6]); ctx.strokeStyle=rgba(INK,0.35*fdA); ctx.lineWidth=LW; ctx.beginPath();
     ctx.moveTo(sx(0),TOPPX); ctx.lineTo(sx(0),sy(r)); ctx.moveTo(sx(1),TOPPX); ctx.lineTo(sx(1),sy(r)); ctx.stroke(); ctx.setLineDash([]);
   }
-  const order=csOld.concat(cs).sort((a,b)=>(b.q>2)-(a.q>2)||b.r-a.r);
+  const order=cs.slice().sort((a,b)=>(b.q>2)-(a.q>2)||b.r-a.r);
   for(const c of order){
     const linked=c.q>2, col=linked?PURPLE:TEAL;
     const fade=linked?clamp(1-0.045*(c.q-3),0.45,1):1;
@@ -381,12 +373,12 @@ function draw(now){
   // HUD
   ctx.textAlign='left'; ctx.fillStyle=INK; ctx.font=`500 ${fsz(30)}px Spectral,Georgia,serif`;
   const hy=TOPPX+fsz(30)+6;
-  ctx.fillText('N = '+(settled?Nint:st.N.toFixed(1)),L+14,hy);
+  ctx.fillText('N = '+Math.round(st.Nf),L+14,hy);   // N is an integer: the label switches halfway through each morph
   ctx.font=`${fsz(16)}px "Source Sans 3",sans-serif`; ctx.fillStyle=MUTED;
-  const qs=Math.round(st.Q); ctx.fillText(qs<=1?'twists: q = 1 only':'twists: q ≤ '+qs,L+16,hy+fsz(16)+8);
+  const qs=Math.round(st.Qf); ctx.fillText(qs<=1?'twists: q = 1 only':'twists: q ≤ '+qs,L+16,hy+fsz(16)+8);
   if(fdA>0.01){
-    let area; const n=st.N;
-    if(n>4+1e-6) area='∞'; else if(settled) area=['π/3','π/2','2π/3','π'][Nint-1]; else area=(2*Math.asin(Math.sqrt(n)/2)).toFixed(2);
+    let area; const n=st.Nf;
+    const nr=Math.round(n); area=nr>4?'∞':['π/3','π/2','2π/3','π'][nr-1];   // the area for the integer N shown
     ctx.globalAlpha=fdA; ctx.fillStyle=INK; ctx.fillText('fundamental domain: area '+area,L+16,hy+2*(fsz(16)+8)); ctx.globalAlpha=1;
   }
   return {st,read};
@@ -402,7 +394,7 @@ PH.forEach(([t0,name],i)=>{ const b=document.createElement('button'); b.type='bu
   b.addEventListener('click',()=>{ if(i===7){ toExplore(); return; } mode='tour'; t=t0+0.01; playing=true; }); phases.appendChild(b); });
 const phBtns=[...phases.children];
 
-function toExplore(){ const st=state(); mode='explore'; playing=false; NfEx=Math.round(st.N); QfEx=Math.max(1,Math.round(st.Q)); }
+function toExplore(){ const st=state(); mode='explore'; playing=false; NfEx=Math.round(st.Nf); QfEx=Math.max(1,Math.round(st.Qf)); }
 btnPlay.addEventListener('click',()=>{ if(mode==='explore'||t>=END){ mode='tour'; t=0; } playing=!playing; });
 btnRestart.addEventListener('click',()=>{ mode='tour'; t=0; playing=true; });
 scrub.addEventListener('input',()=>{ mode='tour'; t=+scrub.value; playing=false; });
@@ -424,7 +416,7 @@ function frame(now){
   if(read!==lastRead){ readout.textContent=read; lastRead=read; }
   btnPlay.textContent=playing?'Pause':'Play';
   if(mode==='tour') scrub.value=t; clock.textContent=(mode==='tour'?t:END).toFixed(1)+' s';
-  const Ns=Math.round(st.N), Qs=Math.max(1,Math.round(st.Q));
+  const Ns=Math.round(st.Nf), Qs=Math.max(1,Math.round(st.Qf));
   if(+sN.value!==Ns) sN.value=Ns; if(+sQ.value!==Qs) sQ.value=Qs; vN.textContent=Ns; vQ.textContent=Qs;
   requestAnimationFrame(frame);
 }
