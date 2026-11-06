@@ -56,6 +56,15 @@ h1{font-weight:400;font-size:clamp(32px,5vw,46px);margin:22px 0 6px}
         Ramanujan-sum twists fill the gaps, except at the cusps of the excluded levels.</p>
       </div>
     </a>
+    <a class="card c1" href="spanning_criterion.html">
+      <canvas id="th5" width="640" height="360" aria-label="For level 36: s squared against N_s for s from 3 to 6; s = 3 and s = 6 block"></canvas>
+      <div class="body">
+        <div class="tag">The spanning theorem</div>
+        <h2>The spanning criterion</h2>
+        <p>Pick a level and a set of primes: for each s up to √N the page compares s² with N<sub>s</sub>,
+        and shows the vector that blocks when the set is not vanishing.</p>
+      </div>
+    </a>
   </div>
 
   <p class="paper">From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</p>
@@ -79,6 +88,20 @@ ctx.restore();
 ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(10,B+0.5); ctx.lineTo(630,B+0.5); ctx.stroke();
 ctx.fillStyle=AMBER; ctx.font='600 26px "Source Sans 3",system-ui,sans-serif'; ctx.textAlign='center';
 ctx.shadowColor=AMBER; ctx.shadowBlur=10; ctx.fillText('+',sx(1/3)-16,B-8); ctx.fillText('−',sx(2/3)+16,B-8);
+})();
+// thumbnail 5: the criterion at N = 36 (s = 3..6)
+(() => {
+const c=document.getElementById('th5'), dpr=Math.min(2,window.devicePixelRatio||1); c.width=640*dpr; c.height=360*dpr;
+const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#05070a'; ctx.fillRect(0,0,640,360);
+const N=36, rows=[[3,9,9],[4,16,4],[5,25,1],[6,36,36]];   // [s, s^2, N_s]
+const y=v=>320-Math.log10(v)/Math.log10(60)*280, x=i=>110+i*140;
+ctx.strokeStyle='#2b3140'; ctx.lineWidth=1; for(const v of [1,10]){ ctx.beginPath(); ctx.moveTo(60,y(v)); ctx.lineTo(600,y(v)); ctx.stroke(); }
+ctx.setLineDash([2,5]); ctx.strokeStyle='#9aa3b5'; ctx.beginPath(); ctx.moveTo(60,y(N)); ctx.lineTo(600,y(N)); ctx.stroke(); ctx.setLineDash([]);
+rows.forEach(([s,sq,ns],i)=>{ const bad=sq<=ns, col=bad?'#ffb347':'#2dd4bf';
+  ctx.strokeStyle=col; ctx.lineWidth=6; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(x(i),y(ns)); ctx.lineTo(x(i),y(sq)); ctx.stroke();
+  ctx.fillStyle='#0b0e13'; ctx.strokeStyle='#ececf1'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x(i),y(sq),11,0,7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#ececf1'; ctx.beginPath(); ctx.arc(x(i),y(ns),9,0,7); ctx.fill();
+  ctx.fillStyle=bad?'#ffb347':'#9aa3b5'; ctx.font='22px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillText(String(s),x(i),350); });
 })();
 </script>
 </body>
