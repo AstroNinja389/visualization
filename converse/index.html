@@ -56,13 +56,13 @@ h1{font-weight:400;font-size:clamp(32px,5vw,46px);margin:22px 0 6px}
         Ramanujan-sum twists fill the gaps, except at the cusps of the excluded levels.</p>
       </div>
     </a>
-    <a class="card c1" href="spanning_criterion.html">
-      <canvas id="th5" width="640" height="360" aria-label="For level 36: s squared against N_s for s from 3 to 6; s = 3 and s = 6 block"></canvas>
+    <a class="card c1" href="matrices.html">
+      <canvas id="thMat" width="640" height="360" aria-label="The 52 legal rows at level 11 and Q = 44: single entries in teal for q = 1 and 2, diagonal bands in purple for larger q, with the rank bar full at 44"></canvas>
       <div class="body">
-        <div class="tag">The spanning theorem</div>
-        <h2>The spanning criterion</h2>
-        <p>Pick a level and a set of primes: for each s up to √N the page compares s² with N<sub>s</sub>,
-        and shows the vector that blocks when the set is not vanishing.</p>
+        <div class="tag">Legal rows</div>
+        <h2>The spanning theorem</h2>
+        <p>The matrix of legal rows, level by level. Where the theorem allows, the rank climbs to Q;
+        at the excluded levels an explicit vector is missed by every row.</p>
       </div>
     </a>
   </div>
@@ -89,19 +89,23 @@ ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(10,B+0
 ctx.fillStyle=AMBER; ctx.font='600 26px "Source Sans 3",system-ui,sans-serif'; ctx.textAlign='center';
 ctx.shadowColor=AMBER; ctx.shadowBlur=10; ctx.fillText('+',sx(1/3)-16,B-8); ctx.fillText('−',sx(2/3)+16,B-8);
 })();
-// thumbnail 5: the criterion at N = 36 (s = 3..6)
+// thumbnail: the legal rows at N = 11, Q = 44 (as on the page), with the rank bar
 (() => {
-const c=document.getElementById('th5'), dpr=Math.min(2,window.devicePixelRatio||1); c.width=640*dpr; c.height=360*dpr;
+const c=document.getElementById('thMat'), dpr=Math.min(2,window.devicePixelRatio||1); c.width=640*dpr; c.height=360*dpr;
 const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#05070a'; ctx.fillRect(0,0,640,360);
-const N=36, rows=[[3,9,9],[4,16,4],[5,25,1],[6,36,36]];   // [s, s^2, N_s]
-const y=v=>320-Math.log10(v)/Math.log10(60)*280, x=i=>110+i*140;
-ctx.strokeStyle='#2b3140'; ctx.lineWidth=1; for(const v of [1,10]){ ctx.beginPath(); ctx.moveTo(60,y(v)); ctx.lineTo(600,y(v)); ctx.stroke(); }
-ctx.setLineDash([2,5]); ctx.strokeStyle='#9aa3b5'; ctx.beginPath(); ctx.moveTo(60,y(N)); ctx.lineTo(600,y(N)); ctx.stroke(); ctx.setLineDash([]);
-rows.forEach(([s,sq,ns],i)=>{ const bad=sq<=ns, col=bad?'#ffb347':'#2dd4bf';
-  ctx.strokeStyle=col; ctx.lineWidth=6; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(x(i),y(ns)); ctx.lineTo(x(i),y(sq)); ctx.stroke();
-  ctx.fillStyle='#0b0e13'; ctx.strokeStyle='#ececf1'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x(i),y(sq),11,0,7); ctx.fill(); ctx.stroke();
-  ctx.fillStyle='#ececf1'; ctx.beginPath(); ctx.arc(x(i),y(ns),9,0,7); ctx.fill();
-  ctx.fillStyle=bad?'#ffb347':'#9aa3b5'; ctx.font='22px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillText(String(s),x(i),350); });
+const TEAL='#2dd4bf', PURPLE='#bf5fff';
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}, lcm=(a,b)=>a/gcd(a,b)*b;
+const N=11, Q=44, half=Q/2, rows=[];
+for(let q=1;q<=Q;q++){ if(Q%q) continue; const ell=lcm(N,q*q), b=Math.floor(Q/Math.sqrt(ell))+2;
+  for(let u=-b;u<=b;u++){ const m=Math.max(Math.abs(u),Math.abs(u+1)); if(m*m*ell>=Q*Q) continue;
+    const cols=[]; for(let a=0;a<q;a++) if(gcd(a,q)===1) cols.push(((u+a*(Q/q))%Q+Q)%Q); rows.push({q,cols}); } }
+const X0=40, X1=600, Y0=18, Y1=302, cw=(X1-X0)/Q, rh=(Y1-Y0)/rows.length;
+rows.forEach((r,i)=>{ ctx.fillStyle=r.q<=2?TEAL:PURPLE;
+  for(const col of r.cols){ const p=(col+half)%Q; ctx.fillRect(X0+p*cw+1,Y0+i*rh+0.3,cw-2,rh-0.6); } });
+ctx.strokeStyle='rgba(154,163,181,0.5)'; ctx.lineWidth=1; ctx.strokeRect(X0-0.5,Y0-0.5,X1-X0+1,Y1-Y0+1);
+const ranks=[[1,26],[2,38],[4,40],[11,44]]; let acc=0;   // rank after each block q | Q (the q = 22 block adds nothing)
+ctx.fillStyle='rgba(154,163,181,0.18)'; ctx.fillRect(X0,320,X1-X0,16);
+for(const [q,r] of ranks){ ctx.fillStyle=q<=2?TEAL:PURPLE; ctx.fillRect(X0+acc/Q*(X1-X0),320,(r-acc)/Q*(X1-X0)-2,16); acc=r; }
 })();
 </script>
 </body>

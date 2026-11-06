@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Spanning Theorem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<style>
+:root{
+  --bg:#000000; --panel:#0b0e13; --fg:#ececf1; --muted:#9aa3b5; --rule:#2b3140;
+  --teal:#2dd4bf; --purple:#bf5fff; --amber:#ffb347; --accent:#2dd4bf; --focus:#2dd4bf; color-scheme:dark;
+  --display:"Spectral",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; } }
+:root[data-theme="dark"]{ --bg:#000000; --panel:#0b0e13; --fg:#ececf1; }
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1160px;margin:0 auto}
+.back{padding-top:18px;font-size:15px}
+.back a{color:var(--muted);text-decoration:none}
+.back a:hover{color:var(--fg)}
+header{padding:10px 0 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 24px}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);letter-spacing:-.01em;margin:0;line-height:1.05}
+.kicker{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 2px}
+.chips .lab{font-size:14px;color:var(--muted);margin-right:6px;min-width:150px}
+.chips button{font:inherit;font-family:var(--mono);font-size:14px;min-width:42px;padding:4px 6px;border-radius:4px;cursor:pointer;
+  background:none;color:var(--fg);border:1px solid var(--rule)}
+.chips button:hover{border-color:var(--muted)}
+.chips button.bad{color:var(--amber);border-color:rgba(255,179,71,.35)}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chips button.bad[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#000}
+.chips button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;min-width:0;position:relative;margin-top:12px}
+.panel canvas{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 14px 12px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:2px}
+.cap{min-height:4.4em;margin-top:14px;font-family:var(--display);font-size:clamp(17px,2vw,20px);line-height:1.4;max-width:70ch}
+.cap ul,.statement,.thm ul,footer ul{margin:0;padding-left:1.2em}
+.cap li,.thm li,footer li{margin:0 0 .3em}
+.cap li::marker,.statement li::marker,.thm li::marker{color:var(--muted)}
+.statement{font-family:var(--display);font-size:18px;line-height:1.5;max-width:82ch;margin:4px 0 14px}
+.statement li{margin:0 0 .35em}
+.thm h3{font-family:var(--display);font-weight:600;font-size:19px;margin:1.1em 0 .35em}
+.thm h3:first-child{margin-top:0}
+.thm ul{margin-bottom:.5em}
+.readout{min-height:1.6em;margin-top:6px;font-size:15px;color:var(--muted)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule);font-size:15px}
+.ctl button{font:inherit;font-size:15px;font-weight:600;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:7px 16px;cursor:pointer;min-width:84px}
+.ctl button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.thm{margin-top:40px;padding-top:22px;border-top:1px solid var(--rule);max-width:80ch;font-family:var(--display);font-size:17px;line-height:1.6}
+.thm p{margin:0 0 .9em}
+.thm .label{font-weight:600}
+.thm .note{color:var(--muted);font-size:16px}
+.thm .katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
+</style>
+
+<div class="wrap">
+<nav class="back"><a href="index.html">← All visualizations</a></nav>
+<header>
+  <h1>The spanning theorem</h1>
+  <span class="kicker">What the legal rows look like, level by level</span>
+</header>
+
+<ul class="statement">
+  <li><strong>Columns:</strong> the circle \(\mathbb R/\mathbb Z\) cut into \(Q\) cells \([\tfrac jQ,\tfrac{j+1}Q]\), drawn from \(-\tfrac12\) to \(\tfrac12\).</li>
+  <li><strong>Rows:</strong> for \(q\mid Q\), the row \(R^Q_{q,u}\) has a \(1\) in each cell \(u+aQ/q\) with \(\gcd(a,q)=1\). It is <em>legal</em> when \(\max\{|u|,|u+1|\}&lt;Q/\sqrt{\operatorname{lcm}(N,q^2)}\): the cell \(u\) lies under the semicircle of the \(c_q\)-twist.</li>
+  <li><strong>Theorem:</strong> for some \(Q\) the legal rows <strong>span</strong> \(\mathbb Q^{\mathbb Z/Q\mathbb Z}\) if and only if \(16\nmid N\) and \(p^2\nmid N\) for every odd prime \(p\).</li>
+</ul>
+
+<div class="chips" id="chipsA"><span class="lab">levels that span</span></div>
+<div class="chips" id="chipsB"><span class="lab">excluded levels</span></div>
+
+<section class="panel">
+  <canvas id="cv" width="1100" height="760" aria-label="The matrix of legal rows for the chosen level: one row per relation, one column per cell of the circle, with the rank filling up block by block"></canvas>
+  <div class="legend">
+    <span><i style="background:var(--teal)"></i>rows with q = 1, 2 (a single entry)</span>
+    <span><i style="background:var(--purple)"></i>rows with q ≥ 3 (one entry per a/q)</span>
+    <span><i style="background:var(--amber)"></i>columns carrying the obstruction x</span>
+  </div>
+</section>
+<div class="cap" id="cap"></div>
+<div class="readout mono" id="readout" aria-live="polite"></div>
+<div class="ctl"><button type="button" id="btnBuild">Build again</button><span class="mono" id="info"></span></div>
+
+<section class="thm">
+  <h3>Reading the picture</h3>
+  <ul>
+    <li>Each <strong>row</strong> is one twisted functional equation used on one cell: it controls the sum of \(f\) over the marked cells.</li>
+    <li>Rows with \(q=1,2\) have a <strong>single</strong> \(1\) (teal); rows with \(q\ge3\) have one \(1\) for each fraction \(a/q\) (purple).</li>
+    <li>Each \(q\)-block is a band of <strong>parallel diagonals</strong>, one for each \(a\).</li>
+    <li>The bar under the matrix is the <strong>rank</strong> of the rows so far; the rows span when it reaches \(Q\).</li>
+    <li>The strip at the top shows the circle covered by the semicircles with \(q\mid Q\): teal for \(q\le2\), purple where only \(q\ge3\) reach.</li>
+  </ul>
+  <h3>Levels that span</h3>
+  <ul>
+    <li>The admissible \(N\le70\) from the paper's table whose smallest \(Q\) is at most \(1596\), each drawn at that <strong>smallest \(Q\)</strong>.</li>
+    <li>Spanning means every value of \(f\) near the line is a combination of values higher up.</li>
+  </ul>
+  <h3>Excluded levels</h3>
+  <ul>
+    <li>If \(s\) is an odd prime with \(s^2\mid N\), or \(s=4\) with \(16\mid N\), take \(Q\) divisible by \(s\).</li>
+    <li>The vector with \(\sin(2\pi m/s)\) in the cell \(mQ/s\) (amber columns) and \(0\) elsewhere is <strong>orthogonal to every legal row</strong>.</li>
+    <li>So the rows <strong>never span</strong>, for any \(Q\). This is the imaginary part of the vector in the paper's proof of necessity.</li>
+  </ul>
+  <p class="note">Ranks computed modulo the prime \(2^{61}-1\) (full rank modulo a prime implies full rank over \(\mathbb Q\)). For every level that spans, the rank is \(Q\) at the table's \(Q\) and below \(Q'\) at \(Q'=Q/p\) for each prime \(p\mid Q\), as the table says. For the excluded levels the orthogonality of the amber vector to all legal rows was checked numerically (largest pairing below \(10^{-15}\)).</p>
+</section>
+<footer>
+  <ul>
+    <li>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</li>
+    <li>Earlier matrix pictures of this kind were drawn by Min Lee.</li>
+  </ul>
+</footer>
+</div>
+
+<script>
+const DATA={"1":{"Q":2,"admissible":true,"nrows":2,"blocks":[{"q":1,"rows":2,"rank":2}],"smaller":{"1":0}},"2":{"Q":2,"admissible":true,"nrows":2,"blocks":[{"q":1,"rows":2,"rank":2}],"smaller":{"1":0}},"3":{"Q":2,"admissible":true,"nrows":2,"blocks":[{"q":1,"rows":2,"rank":2}],"smaller":{"1":0}},"4":{"Q":4,"admissible":true,"nrows":4,"blocks":[{"q":1,"rows":2,"rank":2},{"q":2,"rows":2,"rank":4}],"smaller":{"2":0}},"5":{"Q":6,"admissible":true,"nrows":6,"blocks":[{"q":1,"rows":4,"rank":4},{"q":2,"rows":2,"rank":6}],"smaller":{"3":2,"2":0}},"6":{"Q":4,"admissible":true,"nrows":4,"blocks":[{"q":1,"rows":2,"rank":2},{"q":2,"rows":2,"rank":4}],"smaller":{"2":0}},"7":{"Q":6,"admissible":true,"nrows":6,"blocks":[{"q":1,"rows":4,"rank":4},{"q":2,"rows":2,"rank":6}],"smaller":{"3":2,"2":0}},"8":{"Q":4,"admissible":true,"nrows":4,"blocks":[{"q":1,"rows":2,"rank":2},{"q":2,"rows":2,"rank":4}],"smaller":{"2":0}},"10":{"Q":10,"admissible":true,"nrows":12,"blocks":[{"q":1,"rows":6,"rank":6},{"q":2,"rows":4,"rank":10},{"q":5,"rows":2,"rank":10}],"smaller":{"5":2,"2":0}},"11":{"Q":44,"admissible":true,"nrows":52,"blocks":[{"q":1,"rows":26,"rank":26},{"q":2,"rows":12,"rank":38},{"q":4,"rows":6,"rank":40},{"q":11,"rows":6,"rank":44},{"q":22,"rows":2,"rank":44}],"smaller":{"22":20,"4":2}},"12":{"Q":4,"admissible":true,"nrows":4,"blocks":[{"q":1,"rows":2,"rank":2},{"q":2,"rows":2,"rank":4}],"smaller":{"2":0}},"13":{"Q":104,"admissible":true,"nrows":126,"blocks":[{"q":1,"rows":56,"rank":56},{"q":2,"rows":28,"rank":84},{"q":4,"rows":14,"rank":94},{"q":8,"rows":6,"rank":98},{"q":13,"rows":14,"rank":104},{"q":26,"rows":6,"rank":104},{"q":52,"rows":2,"rank":104}],"smaller":{"52":50,"8":6}},"14":{"Q":12,"admissible":true,"nrows":14,"blocks":[{"q":1,"rows":6,"rank":6},{"q":2,"rows":4,"rank":10},{"q":3,"rows":2,"rank":12},{"q":4,"rows":2,"rank":12}],"smaller":{"6":4,"4":2}},"15":{"Q":20,"admissible":true,"nrows":22,"blocks":[{"q":1,"rows":10,"rank":10},{"q":2,"rows":4,"rank":14},{"q":4,"rows":2,"rank":16},{"q":5,"rows":4,"rank":20},{"q":10,"rows":2,"rank":20}],"smaller":{"10":8,"4":2}},"17":{"Q":408,"admissible":true,"nrows":590,"blocks":[{"q":1,"rows":196,"rank":196},{"q":2,"rows":98,"rank":294},{"q":3,"rows":64,"rank":358},{"q":4,"rows":48,"rank":384},{"q":6,"rows":32,"rank":384},{"q":8,"rows":24,"rank":394},{"q":12,"rows":16,"rank":394},{"q":17,"rows":46,"rank":408},{"q":24,"rows":8,"rank":408},{"q":34,"rows":22,"rank":408},{"q":51,"rows":14,"rank":408},{"q":68,"rows":10,"rank":408},{"q":102,"rows":6,"rank":408},{"q":136,"rows":4,"rank":408},{"q":204,"rows":2,"rank":408}],"smaller":{"204":202,"136":128,"24":18}},"19":{"Q":570,"admissible":true,"nrows":748,"blocks":[{"q":1,"rows":260,"rank":260},{"q":2,"rows":130,"rank":390},{"q":3,"rows":86,"rank":476},{"q":5,"rows":52,"rank":512},{"q":6,"rows":42,"rank":512},{"q":10,"rows":26,"rank":538},{"q":15,"rows":16,"rank":544},{"q":19,"rows":58,"rank":570},{"q":30,"rows":8,"rank":570},{"q":38,"rows":28,"rank":570},{"q":57,"rows":18,"rank":570},{"q":95,"rows":10,"rank":570},{"q":114,"rows":8,"rank":570},{"q":190,"rows":4,"rank":570},{"q":285,"rows":2,"rank":570}],"smaller":{"285":221,"190":158,"114":100,"30":24}},"20":{"Q":20,"admissible":true,"nrows":24,"blocks":[{"q":1,"rows":8,"rank":8},{"q":2,"rows":8,"rank":16},{"q":4,"rows":4,"rank":18},{"q":5,"rows":2,"rank":20},{"q":10,"rows":2,"rank":20}],"smaller":{"10":8,"4":0}},"21":{"Q":84,"admissible":true,"nrows":124,"blocks":[{"q":1,"rows":36,"rank":36},{"q":2,"rows":18,"rank":54},{"q":3,"rows":20,"rank":74},{"q":4,"rows":8,"rank":78},{"q":6,"rows":10,"rank":78},{"q":7,"rows":12,"rank":84},{"q":12,"rows":4,"rank":84},{"q":14,"rows":6,"rank":84},{"q":21,"rows":6,"rank":84},{"q":28,"rows":2,"rank":84},{"q":42,"rows":2,"rank":84}],"smaller":{"42":40,"28":24,"12":8}},"22":{"Q":132,"admissible":true,"nrows":184,"blocks":[{"q":1,"rows":56,"rank":56},{"q":2,"rows":38,"rank":94},{"q":3,"rows":18,"rank":112},{"q":4,"rows":18,"rank":124},{"q":6,"rows":12,"rank":124},{"q":11,"rows":16,"rank":132},{"q":12,"rows":6,"rank":132},{"q":22,"rows":10,"rank":132},{"q":33,"rows":4,"rank":132},{"q":44,"rows":4,"rank":132},{"q":66,"rows":2,"rank":132}],"smaller":{"66":60,"44":40,"12":6}},"23":{"Q":1380,"admissible":true,"nrows":1906,"blocks":[{"q":1,"rows":574,"rank":574},{"q":2,"rows":286,"rank":860},{"q":3,"rows":190,"rank":1050},{"q":4,"rows":142,"rank":1192},{"q":5,"rows":114,"rank":1246},{"q":6,"rows":94,"rank":1246},{"q":10,"rows":56,"rank":1296},{"q":12,"rows":46,"rank":1296},{"q":15,"rows":38,"rank":1312},{"q":20,"rows":28,"rank":1330},{"q":23,"rows":118,"rank":1380},{"q":30,"rows":18,"rank":1380},{"q":46,"rows":58,"rank":1380},{"q":60,"rows":8,"rank":1380},{"q":69,"rows":38,"rank":1380},{"q":92,"rows":28,"rank":1380},{"q":115,"rows":22,"rank":1380},{"q":138,"rows":18,"rank":1380},{"q":230,"rows":10,"rank":1380},{"q":276,"rows":8,"rank":1380},{"q":345,"rows":6,"rank":1380},{"q":460,"rows":4,"rank":1380},{"q":690,"rows":2,"rank":1380}],"smaller":{"690":648,"460":412,"276":248,"60":54}},"24":{"Q":12,"admissible":true,"nrows":14,"blocks":[{"q":1,"rows":4,"rank":4},{"q":2,"rows":4,"rank":8},{"q":3,"rows":2,"rank":10},{"q":4,"rows":2,"rank":12},{"q":6,"rows":2,"rank":12}],"smaller":{"6":4,"4":0}},"26":{"Q":312,"admissible":true,"nrows":444,"blocks":[{"q":1,"rows":122,"rank":122},{"q":2,"rows":86,"rank":208},{"q":3,"rows":40,"rank":248},{"q":4,"rows":42,"rank":290},{"q":6,"rows":28,"rank":290},{"q":8,"rows":20,"rank":294},{"q":12,"rows":14,"rank":294},{"q":13,"rows":32,"rank":312},{"q":24,"rows":6,"rank":312},{"q":26,"rows":22,"rank":312},{"q":39,"rows":10,"rank":312},{"q":52,"rows":10,"rank":312},{"q":78,"rows":6,"rank":312},{"q":104,"rows":4,"rank":312},{"q":156,"rows":2,"rank":312}],"smaller":{"156":154,"104":94,"24":20}},"28":{"Q":42,"admissible":true,"nrows":44,"blocks":[{"q":1,"rows":14,"rank":14},{"q":2,"rows":14,"rank":28},{"q":3,"rows":4,"rank":32},{"q":6,"rows":4,"rank":36},{"q":7,"rows":4,"rank":40},{"q":14,"rows":4,"rank":42}],"smaller":{"21":10,"14":8,"6":4}},"30":{"Q":30,"admissible":true,"nrows":34,"blocks":[{"q":1,"rows":10,"rank":10},{"q":2,"rows":6,"rank":16},{"q":3,"rows":6,"rank":22},{"q":5,"rows":4,"rank":26},{"q":6,"rows":4,"rank":30},{"q":10,"rows":2,"rank":30},{"q":15,"rows":2,"rank":30}],"smaller":{"15":8,"10":4,"6":2}},"33":{"Q":264,"admissible":true,"nrows":330,"blocks":[{"q":1,"rows":90,"rank":90},{"q":2,"rows":44,"rank":134},{"q":3,"rows":52,"rank":186},{"q":4,"rows":22,"rank":208},{"q":6,"rows":26,"rank":232},{"q":8,"rows":10,"rank":242},{"q":11,"rows":26,"rank":264},{"q":12,"rows":12,"rank":264},{"q":22,"rows":12,"rank":264},{"q":24,"rows":6,"rank":264},{"q":33,"rows":14,"rank":264},{"q":44,"rows":6,"rank":264},{"q":66,"rows":6,"rank":264},{"q":88,"rows":2,"rank":264},{"q":132,"rows":2,"rank":264}],"smaller":{"132":128,"88":60,"24":20}},"34":{"Q":1020,"admissible":true,"nrows":1400,"blocks":[{"q":1,"rows":348,"rank":348},{"q":2,"rows":246,"rank":594},{"q":3,"rows":116,"rank":710},{"q":4,"rows":122,"rank":832},{"q":5,"rows":68,"rank":900},{"q":6,"rows":82,"rank":938},{"q":10,"rows":48,"rank":966},{"q":12,"rows":40,"rank":966},{"q":15,"rows":22,"rank":988},{"q":17,"rows":84,"rank":1020},{"q":20,"rows":24,"rank":1020},{"q":30,"rows":16,"rank":1020},{"q":34,"rows":58,"rank":1020},{"q":51,"rows":28,"rank":1020},{"q":60,"rows":8,"rank":1020},{"q":68,"rows":28,"rank":1020},{"q":85,"rows":16,"rank":1020},{"q":102,"rows":18,"rank":1020},{"q":170,"rows":10,"rank":1020},{"q":204,"rows":8,"rank":1020},{"q":255,"rows":4,"rank":1020},{"q":340,"rows":4,"rank":1020},{"q":510,"rows":2,"rank":1020}],"smaller":{"510":490,"340":298,"204":190,"60":56}},"35":{"Q":420,"admissible":true,"nrows":624,"blocks":[{"q":1,"rows":140,"rank":140},{"q":2,"rows":70,"rank":210},{"q":3,"rows":46,"rank":256},{"q":4,"rows":34,"rank":290},{"q":5,"rows":62,"rank":352},{"q":6,"rows":22,"rank":374},{"q":7,"rows":52,"rank":420},{"q":10,"rows":30,"rank":420},{"q":12,"rows":10,"rank":420},{"q":14,"rows":26,"rank":420},{"q":15,"rows":20,"rank":420},{"q":20,"rows":14,"rank":420},{"q":21,"rows":16,"rank":420},{"q":28,"rows":12,"rank":420},{"q":30,"rows":10,"rank":420},{"q":35,"rows":22,"rank":420},{"q":42,"rows":8,"rank":420},{"q":60,"rows":4,"rank":420},{"q":70,"rows":10,"rank":420},{"q":84,"rows":4,"rank":420},{"q":105,"rows":6,"rank":420},{"q":140,"rows":4,"rank":420},{"q":210,"rows":2,"rank":420}],"smaller":{"210":202,"140":122,"84":74,"60":52}},"38":{"Q":1596,"admissible":true,"nrows":1968,"blocks":[{"q":1,"rows":516,"rank":516},{"q":2,"rows":366,"rank":882},{"q":3,"rows":172,"rank":1054},{"q":4,"rows":182,"rank":1236},{"q":6,"rows":122,"rank":1358},{"q":7,"rows":72,"rank":1430},{"q":12,"rows":60,"rank":1430},{"q":14,"rows":52,"rank":1482},{"q":19,"rows":118,"rank":1566},{"q":21,"rows":24,"rank":1590},{"q":28,"rows":26,"rank":1596},{"q":38,"rows":82,"rank":1596},{"q":42,"rows":16,"rank":1596},{"q":57,"rows":38,"rank":1596},{"q":76,"rows":40,"rank":1596},{"q":84,"rows":8,"rank":1596},{"q":114,"rows":26,"rank":1596},{"q":133,"rows":16,"rank":1596},{"q":228,"rows":12,"rank":1596},{"q":266,"rows":10,"rank":1596},{"q":399,"rows":4,"rank":1596},{"q":532,"rows":4,"rank":1596},{"q":798,"rows":2,"rank":1596}],"smaller":{"798":710,"532":430,"228":202,"84":70}},"39":{"Q":780,"admissible":true,"nrows":1028,"blocks":[{"q":1,"rows":248,"rank":248},{"q":2,"rows":124,"rank":372},{"q":3,"rows":144,"rank":516},{"q":4,"rows":62,"rank":578},{"q":5,"rows":48,"rank":626},{"q":6,"rows":72,"rank":694},{"q":10,"rows":24,"rank":718},{"q":12,"rows":36,"rank":730},{"q":13,"rows":68,"rank":776},{"q":15,"rows":28,"rank":776},{"q":20,"rows":12,"rank":780},{"q":26,"rows":34,"rank":780},{"q":30,"rows":14,"rank":780},{"q":39,"rows":38,"rank":780},{"q":52,"rows":16,"rank":780},{"q":60,"rows":6,"rank":780},{"q":65,"rows":12,"rank":780},{"q":78,"rows":18,"rank":780},{"q":130,"rows":6,"rank":780},{"q":156,"rows":8,"rank":780},{"q":195,"rows":6,"rank":780},{"q":260,"rows":2,"rank":780},{"q":390,"rows":2,"rank":780}],"smaller":{"390":370,"260":190,"156":142,"60":50}},"40":{"Q":90,"admissible":true,"nrows":108,"blocks":[{"q":1,"rows":28,"rank":28},{"q":2,"rows":28,"rank":56},{"q":3,"rows":8,"rank":64},{"q":5,"rows":12,"rank":76},{"q":6,"rows":8,"rank":82},{"q":9,"rows":2,"rank":84},{"q":10,"rows":12,"rank":88},{"q":15,"rows":4,"rank":88},{"q":18,"rows":2,"rank":90},{"q":30,"rows":4,"rank":90}],"smaller":{"45":26,"30":26,"18":8}},"42":{"Q":168,"admissible":true,"nrows":230,"blocks":[{"q":1,"rows":50,"rank":50},{"q":2,"rows":36,"rank":86},{"q":3,"rows":28,"rank":114},{"q":4,"rows":18,"rank":132},{"q":6,"rows":20,"rank":152},{"q":7,"rows":18,"rank":166},{"q":8,"rows":8,"rank":168},{"q":12,"rows":10,"rank":168},{"q":14,"rows":12,"rank":168},{"q":21,"rows":10,"rank":168},{"q":24,"rows":4,"rank":168},{"q":28,"rows":6,"rank":168},{"q":42,"rows":6,"rank":168},{"q":56,"rows":2,"rank":168},{"q":84,"rows":2,"rank":168}],"smaller":{"84":82,"56":44,"24":18}},"44":{"Q":990,"admissible":true,"nrows":1308,"blocks":[{"q":1,"rows":298,"rank":298},{"q":2,"rows":298,"rank":596},{"q":3,"rows":98,"rank":694},{"q":5,"rows":58,"rank":752},{"q":6,"rows":98,"rank":818},{"q":9,"rows":32,"rank":850},{"q":10,"rows":58,"rank":876},{"q":11,"rows":88,"rank":960},{"q":15,"rows":18,"rank":972},{"q":18,"rows":32,"rank":982},{"q":22,"rows":88,"rank":982},{"q":30,"rows":18,"rank":990},{"q":33,"rows":28,"rank":990},{"q":45,"rows":6,"rank":990},{"q":55,"rows":16,"rank":990},{"q":66,"rows":28,"rank":990},{"q":90,"rows":6,"rank":990},{"q":99,"rows":8,"rank":990},{"q":110,"rows":16,"rank":990},{"q":165,"rows":4,"rank":990},{"q":198,"rows":8,"rank":990},{"q":330,"rows":4,"rank":990}],"smaller":{"495":294,"330":318,"198":182,"90":76}},"56":{"Q":630,"admissible":true,"nrows":780,"blocks":[{"q":1,"rows":168,"rank":168},{"q":2,"rows":168,"rank":336},{"q":3,"rows":56,"rank":392},{"q":5,"rows":32,"rank":424},{"q":6,"rows":56,"rank":480},{"q":7,"rows":62,"rank":542},{"q":9,"rows":18,"rank":560},{"q":10,"rows":32,"rank":592},{"q":14,"rows":62,"rank":614},{"q":15,"rows":10,"rank":622},{"q":18,"rows":18,"rank":628},{"q":21,"rows":20,"rank":628},{"q":30,"rows":10,"rank":630},{"q":35,"rows":12,"rank":630},{"q":42,"rows":20,"rank":630},{"q":45,"rows":2,"rank":630},{"q":63,"rows":6,"rank":630},{"q":70,"rows":12,"rank":630},{"q":90,"rows":2,"rank":630},{"q":105,"rows":4,"rank":630},{"q":126,"rows":6,"rank":630},{"q":210,"rows":4,"rank":630}],"smaller":{"315":184,"210":202,"126":106,"90":76}},"60":{"Q":210,"admissible":true,"nrows":264,"blocks":[{"q":1,"rows":54,"rank":54},{"q":2,"rows":54,"rank":108},{"q":3,"rows":30,"rank":138},{"q":5,"rows":24,"rank":162},{"q":6,"rows":30,"rank":192},{"q":7,"rows":6,"rank":196},{"q":10,"rows":24,"rank":210},{"q":14,"rows":6,"rank":210},{"q":15,"rows":12,"rank":210},{"q":21,"rows":4,"rank":210},{"q":30,"rows":12,"rank":210},{"q":35,"rows":2,"rank":210},{"q":42,"rows":4,"rank":210},{"q":70,"rows":2,"rank":210}],"smaller":{"105":62,"70":54,"42":32,"30":24}},"70":{"Q":1260,"admissible":true,"nrows":1742,"blocks":[{"q":1,"rows":300,"rank":300},{"q":2,"rows":212,"rank":512},{"q":3,"rows":100,"rank":612},{"q":4,"rows":106,"rank":718},{"q":5,"rows":134,"rank":852},{"q":6,"rows":70,"rank":922},{"q":7,"rows":112,"rank":1034},{"q":9,"rows":32,"rank":1066},{"q":10,"rows":94,"rank":1160},{"q":12,"rows":34,"rank":1192},{"q":14,"rows":80,"rank":1238},{"q":15,"rows":44,"rank":1248},{"q":18,"rows":22,"rank":1260},{"q":20,"rows":46,"rank":1260},{"q":21,"rows":36,"rank":1260},{"q":28,"rows":40,"rank":1260},{"q":30,"rows":30,"rank":1260},{"q":35,"rows":50,"rank":1260},{"q":36,"rows":10,"rank":1260},{"q":42,"rows":26,"rank":1260},{"q":45,"rows":14,"rank":1260},{"q":60,"rows":14,"rank":1260},{"q":63,"rows":12,"rank":1260},{"q":70,"rows":34,"rank":1260},{"q":84,"rows":12,"rank":1260},{"q":90,"rows":10,"rank":1260},{"q":105,"rows":16,"rank":1260},{"q":126,"rows":8,"rank":1260},{"q":140,"rows":16,"rank":1260},{"q":180,"rows":4,"rank":1260},{"q":210,"rows":10,"rank":1260},{"q":252,"rows":4,"rank":1260},{"q":315,"rows":4,"rank":1260},{"q":420,"rows":4,"rank":1260},{"q":630,"rows":2,"rank":1260}],"smaller":{"630":564,"420":400,"252":210,"180":156}},"9":{"Q":36,"admissible":false,"nrows":80,"blocks":[{"q":1,"rows":22,"rank":22},{"q":2,"rows":10,"rank":32},{"q":3,"rows":22,"rank":34},{"q":4,"rows":4,"rank":34},{"q":6,"rows":10,"rank":34},{"q":9,"rows":6,"rank":34},{"q":12,"rows":4,"rank":34},{"q":18,"rows":2,"rank":34}],"s":3,"x":[[12,0.8660254037844387],[24,-0.8660254037844385]]},"16":{"Q":48,"admissible":false,"nrows":100,"blocks":[{"q":1,"rows":22,"rank":22},{"q":2,"rows":22,"rank":44},{"q":3,"rows":6,"rank":44},{"q":4,"rows":22,"rank":46},{"q":6,"rows":6,"rank":46},{"q":8,"rows":10,"rank":46},{"q":12,"rows":6,"rank":46},{"q":16,"rows":4,"rank":46},{"q":24,"rows":2,"rank":46}],"s":4,"x":[[12,1.0],[24,1.2246467991473532e-16],[36,-1.0]]},"18":{"Q":36,"admissible":false,"nrows":66,"blocks":[{"q":1,"rows":16,"rank":16},{"q":2,"rows":10,"rank":26},{"q":3,"rows":16,"rank":34},{"q":4,"rows":4,"rank":34},{"q":6,"rows":10,"rank":34},{"q":9,"rows":4,"rank":34},{"q":12,"rows":4,"rank":34},{"q":18,"rows":2,"rank":34}],"s":3,"x":[[12,0.8660254037844387],[24,-0.8660254037844385]]},"25":{"Q":60,"admissible":false,"nrows":88,"blocks":[{"q":1,"rows":22,"rank":22},{"q":2,"rows":10,"rank":32},{"q":3,"rows":6,"rank":38},{"q":4,"rows":4,"rank":42},{"q":5,"rows":22,"rank":52},{"q":6,"rows":2,"rank":52},{"q":10,"rows":10,"rank":52},{"q":15,"rows":6,"rank":52},{"q":20,"rows":4,"rank":52},{"q":30,"rows":2,"rank":52}],"s":5,"x":[[12,0.9510565162951535],[24,0.5877852522924732],[36,-0.587785252292473],[48,-0.9510565162951536]]},"27":{"Q":54,"admissible":false,"nrows":76,"blocks":[{"q":1,"rows":20,"rank":20},{"q":2,"rows":10,"rank":30},{"q":3,"rows":20,"rank":46},{"q":6,"rows":10,"rank":46},{"q":9,"rows":10,"rank":46},{"q":18,"rows":4,"rank":46},{"q":27,"rows":2,"rank":46}],"s":3,"x":[[18,0.8660254037844387],[36,-0.8660254037844385]]},"36":{"Q":72,"admissible":false,"nrows":130,"blocks":[{"q":1,"rows":22,"rank":22},{"q":2,"rows":22,"rank":44},{"q":3,"rows":22,"rank":66},{"q":4,"rows":10,"rank":66},{"q":6,"rows":22,"rank":68},{"q":8,"rows":4,"rank":68},{"q":9,"rows":6,"rank":68},{"q":12,"rows":10,"rank":68},{"q":18,"rows":6,"rank":68},{"q":24,"rows":4,"rank":68},{"q":36,"rows":2,"rank":68}],"s":3,"x":[[24,0.8660254037844387],[48,-0.8660254037844385]]}};
+(() => {
+const TEAL='#2dd4bf', PURPLE='#bf5fff', AMBER='#ffb347', INK='#ececf1', MUTED='#9aa3b5', RULE='#2b3140', PANEL='#0b0e13';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const W=1100, H=760;
+let dpr=1;
+function resize(){ dpr=Math.min(2,window.devicePixelRatio||1); cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+resize(); window.addEventListener('resize',()=>{ if(Math.min(2,window.devicePixelRatio||1)!==dpr){ resize(); if(cur) renderMatrix(cur.Q,cur.rows,cur.pos); } });
+
+const L=56, R=170, MX0=L, MX1=W-R, BARY=30, STEMY=78, MY0=112, MY1=676, RANKY=700;
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;};
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+function rgba(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
+function hexRGB(hex){ const n=parseInt(hex.slice(1),16); return [n>>16,(n>>8)&255,n&255]; }
+
+function legalRows(N,Q){
+  const rows=[];
+  for(let q=1;q<=Q;q++){ if(Q%q) continue; const ell=lcm(N,q*q), b=Math.floor(Math.sqrt(Q*Q/ell))+2;
+    for(let u=-b;u<=b;u++){ const m=Math.max(Math.abs(u),Math.abs(u+1)); if(m*m*ell<Q*Q){
+      const cols=[]; for(let a=0;a<q;a++) if(gcd(a,q)===1) cols.push(((u+a*(Q/q))%Q+Q)%Q);
+      rows.push({q,u,ell,m,cols}); } } }
+  return rows;
+}
+
+let cur=null, t0=0;
+const offscreen=document.createElement('canvas'), octx=offscreen.getContext('2d');
+function renderMatrix(Q,rows,pos){
+  const w=Math.round((MX1-MX0)*dpr), h=Math.round((MY1-MY0)*dpr);
+  offscreen.width=w; offscreen.height=h; octx.clearRect(0,0,w,h);
+  const cw=w/Q, rh=h/rows.length, gx=cw>6?1:0, gy=rh>6?1:0;
+  rows.forEach((r,i)=>{ octx.fillStyle=r.q<=2?TEAL:PURPLE; const y=Math.floor(i*rh)+gy, hh=Math.max(1,Math.floor((i+1)*rh)-Math.floor(i*rh)-2*gy);
+    for(const c of r.cols){ const p=pos(c), x=Math.floor(p*cw)+gx; octx.fillRect(x,y,Math.max(1,Math.floor((p+1)*cw)-Math.floor(p*cw)-2*gx),hh); } });
+}
+function select(N){
+  const d=DATA[N], Q=d.Q, rows=legalRows(N,Q);
+  const half=Math.floor(Q/2);           // column c (0..Q-1) drawn at position ((c+half) mod Q) - half
+  const pos=c=>((c+half)%Q+Q)%Q;         // 0..Q-1 left to right, centre of the circle at index half
+  const blocks=[]; let start=0;
+  d.blocks.forEach(b=>{ blocks.push({...b,start,end:start+b.rows}); start+=b.rows; });
+  // the matrix is rendered once, at display resolution, into an offscreen canvas
+  renderMatrix(Q,rows,pos);
+  // coverage of the circle by the semicircles with q | Q (as on the Hecke page)
+  const iv=[], ivd=[];
+  for(let q=1;q<=Q;q++){ if(Q%q) continue; const r=1/Math.sqrt(lcm(N,q*q));
+    for(let a=0;a<q;a++){ if(gcd(a,q)!==1) continue; for(const k of [-1,0,1]){ const c=a/q+k; iv.push([c-r,c+r]); if(q<=2) ivd.push([c-r,c+r]); } } }
+  cur={N,Q,d,rows,blocks,pos,half,iv,ivd};
+  t0=performance.now();
+  document.querySelectorAll('.chips button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.n===N)));
+  const cap=document.getElementById('cap');
+  if(d.admissible) cap.innerHTML=`<ul><li><strong>N = ${N}</strong>, Q = ${Q}${factor(Q)}: ${rows.length} legal rows.</li><li>Block by block the rank climbs to <strong>${Q}</strong>: the rows <strong>span</strong>.</li><li>Q = ${Q} is the smallest Q that works (the paper's table).</li></ul>`;
+  else cap.innerHTML=`<ul><li><strong>N = ${N} is excluded</strong>: ${N%16===0?'16':d.s+'²'} divides N.</li><li>At Q = ${Q} the ${rows.length} legal rows have rank ${d.blocks[d.blocks.length-1].rank}, <strong>short by ${Q-d.blocks[d.blocks.length-1].rank}</strong>.</li><li>The amber columns carry a vector that every legal row misses, so no Q works.</li></ul>`;
+  document.getElementById('info').textContent=`N = ${N}   Q = ${Q}   rows = ${rows.length}   blocks q | Q: ${d.blocks.length}`;
+}
+function factor(Q){ if(Q<4) return ''; const f=[]; let n=Q; for(let p=2;p*p<=n;p++){ let e=0; while(n%p===0){ n/=p; e++; } if(e) f.push(e>1?p+'^'+e:String(p)); } if(n>1) f.push(String(n)); return f.length>1||f[0].includes('^')?' = '+f.join('·').replace(/\^(\d+)/g,(m,e)=>e==='2'?'²':e==='3'?'³':e==='4'?'⁴':'^'+e):''; }
+function inside(iv,x){ for(const v of iv) if(x>v[0]&&x<v[1]) return true; return false; }
+
+function draw(now){
+  const {N,Q,d,rows,blocks,pos,half}=cur;
+  const t=(now-t0)/1000;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=PANEL; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic'; ctx.globalAlpha=1; ctx.setLineDash([]);
+  const cw=(MX1-MX0)/Q, xOf=p=>MX0+p*cw;   // p = drawing index 0..Q-1, position (p-half)/Q
+  // coverage bar
+  ctx.font='13px "Source Sans 3",sans-serif'; ctx.fillStyle=MUTED; ctx.textAlign='left'; ctx.fillText('the circle ℝ/ℤ: covered by the semicircles with q | Q',MX0,BARY-8);
+  for(let x=MX0;x<MX1;x++){ const w=(x+0.5-MX0)/(MX1-MX0)*Q-half, y=w/Q; ctx.fillStyle=inside(cur.ivd,y)?TEAL:inside(cur.iv,y)?PURPLE:AMBER; ctx.fillRect(x,BARY,1,8); }
+  ctx.fillStyle=MUTED; ctx.textAlign='center';
+  for(const [v,lab] of [[-0.5,'−½'],[-0.25,'−¼'],[0,'0'],[0.25,'¼'],[0.5,'½']]){ const x=MX0+(v*Q+half)*cw; ctx.fillRect(x-0.5,BARY+10,1,5); ctx.fillText(lab,x,BARY+28); }
+
+  // obstruction columns
+  if(!d.admissible){
+    for(const [n,val] of d.x){ const x=xOf(pos(n))+cw/2; ctx.fillStyle=rgba(AMBER,0.16); ctx.fillRect(xOf(pos(n)),MY0,Math.max(cw,1.5),MY1-MY0);
+      ctx.strokeStyle=AMBER; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x,STEMY); ctx.lineTo(x,STEMY-val*22); ctx.stroke();
+      ctx.fillStyle=AMBER; ctx.beginPath(); ctx.arc(x,STEMY-val*22,3.5,0,7); ctx.fill(); }
+    ctx.strokeStyle=rgba(MUTED,0.6); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(MX0,STEMY+0.5); ctx.lineTo(MX1,STEMY+0.5); ctx.stroke();
+    ctx.fillStyle=AMBER; ctx.textAlign='left'; ctx.fillText('x',MX1+10,STEMY+4);
+  }
+
+  // matrix, revealed block by block
+  const per=Math.max(0.35,Math.min(0.9,7/blocks.length)), nb=blocks.length;
+  const shownF=clamp(t/per,0,nb); const shown=Math.floor(shownF);
+  const rh=(MY1-MY0)/rows.length;
+  const rowsShown=shown>=nb?rows.length:blocks[shown].start+Math.round((shownF-shown)*blocks[shown].rows);
+  if(rowsShown>0){
+    const sh=Math.round(rowsShown*rh*dpr);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(offscreen,0,0,offscreen.width,sh,MX0,MY0,MX1-MX0,sh/dpr);
+  }
+  // block rules and labels
+  let lastLab=-1e9;
+  blocks.forEach((b,k)=>{ if(k>shown) return; const y=MY0+b.start*rh;
+    ctx.strokeStyle=rgba(MUTED,0.35); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(MX0,y+0.5); ctx.lineTo(MX1,y+0.5); ctx.stroke();
+    const yc=MY0+(b.start+b.end)/2*rh+4;
+    if(yc-lastLab>=13){ ctx.fillStyle=b.q<=2?TEAL:PURPLE; ctx.textAlign='left'; ctx.font='13px "IBM Plex Mono",monospace';
+      ctx.fillText(`q=${b.q}`,MX1+10,yc); ctx.fillStyle=MUTED; ctx.font='12px "Source Sans 3",sans-serif'; ctx.fillText(`${b.rows} row${b.rows>1?'s':''}`,MX1+70,yc); lastLab=yc; }
+  });
+  ctx.strokeStyle=rgba(MUTED,0.5); ctx.strokeRect(MX0-0.5,MY0-0.5,MX1-MX0+1,MY1-MY0+1);
+  ctx.save(); ctx.translate(L-18,(MY0+MY1)/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle=MUTED; ctx.font='13px "Source Sans 3",sans-serif'; ctx.fillText('legal rows, by q, then u',0,0); ctx.restore();
+
+  // rank bar
+  const rank=shown===0?0:d.blocks[Math.min(shown,nb)-1].rank;
+  const prevRank=shown===0?0:d.blocks[Math.min(shown,nb)-1].rank;
+  ctx.fillStyle=rgba(MUTED,0.18); ctx.fillRect(MX0,RANKY,MX1-MX0,14);
+  let acc=0;
+  for(let k=0;k<Math.min(shown,nb);k++){ const r=d.blocks[k].rank, w=(r-acc)/Q*(MX1-MX0); ctx.fillStyle=d.blocks[k].q<=2?TEAL:PURPLE; ctx.fillRect(MX0+acc/Q*(MX1-MX0),RANKY,Math.max(0,w-(w>3?1:0)),14); acc=r; }
+  ctx.fillStyle=INK; ctx.font='15px "IBM Plex Mono",monospace'; ctx.textAlign='left';
+  ctx.fillText(`rank ${rank} / ${Q}`,MX1+10,RANKY+12);
+  if(shown>=nb){ ctx.fillStyle=d.admissible?TEAL:AMBER; ctx.font='14px "Source Sans 3",sans-serif';
+    ctx.fillText(d.admissible?'the rows span':'short by '+(Q-rank),MX1+10,RANKY+32); }
+  ctx.fillStyle=MUTED; ctx.font='13px "Source Sans 3",sans-serif'; ctx.fillText('rank of the rows so far',MX0,RANKY+32);
+  requestAnimationFrame(draw);
+}
+
+// hover readout
+const readout=document.getElementById('readout');
+cv.addEventListener('pointermove',e=>{
+  if(!cur) return; const r=cv.getBoundingClientRect(); const px=(e.clientX-r.left)*W/r.width, py=(e.clientY-r.top)*H/r.height;
+  const {Q,rows,half}=cur; const cw=(MX1-MX0)/Q, rh=(MY1-MY0)/rows.length;
+  if(px<MX0||px>=MX1||py<MY0||py>=MY1){ readout.textContent=''; return; }
+  const p=Math.floor((px-MX0)/cw), j=p-half, i=Math.floor((py-MY0)/rh), row=rows[i];
+  const lim=(Q/Math.sqrt(row.ell));
+  readout.textContent=`column ${j} (cell [${j}/${Q}, ${j+1}/${Q}])   ·   row R(${row.q}, ${row.u}): ${row.cols.length} entr${row.cols.length>1?'ies':'y'}, legal since max(|u|,|u+1|) = ${row.m} < Q/√lcm(N,q²) = ${lim.toFixed(2)}`;
+});
+cv.addEventListener('pointerleave',()=>{ readout.textContent=''; });
+
+// chips
+const A=Object.keys(DATA).map(Number).filter(n=>DATA[n].admissible).sort((a,b)=>a-b);
+const B=Object.keys(DATA).map(Number).filter(n=>!DATA[n].admissible).sort((a,b)=>a-b);
+for(const [id,list,cls] of [['chipsA',A,''],['chipsB',B,'bad']]){ const el=document.getElementById(id);
+  for(const n of list){ const b=document.createElement('button'); b.type='button'; b.textContent=n; b.dataset.n=n; if(cls) b.className=cls;
+    b.title=`N = ${n}, Q = ${DATA[n].Q}`; b.setAttribute('aria-pressed','false'); b.addEventListener('click',()=>select(n)); el.appendChild(b); } }
+document.getElementById('btnBuild').addEventListener('click',()=>{ t0=performance.now(); });
+select(11);
+requestAnimationFrame(draw);
+})();
+</script>
+</html>
