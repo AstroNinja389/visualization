@@ -34,7 +34,11 @@ h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);l
 .legend{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 14px 12px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{display:inline-block;width:18px;height:8px;border-radius:2px}
-.cap{min-height:4.2em;margin-top:14px;font-family:var(--display);font-size:clamp(18px,2.2vw,22px);line-height:1.4;max-width:66ch}
+.cap{min-height:5.9em;margin-top:14px;font-family:var(--display);font-size:clamp(17px,2vw,20px);line-height:1.4;max-width:70ch}
+.cap ul{margin:0;padding-left:1.15em}
+.cap li{margin:0 0 .3em}
+.cap li::marker{color:var(--muted)}
+.cap strong{font-weight:600}
 .cap > div{animation:fade .45s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .readout{min-height:2.8em;margin-top:6px;font-size:15px;color:var(--muted);max-width:90ch}
@@ -52,10 +56,18 @@ h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.5vw,44px);l
 .mono{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
 .thm{margin-top:40px;padding-top:22px;border-top:1px solid var(--rule);max-width:80ch;font-family:var(--display);font-size:17px;line-height:1.6}
 .thm p{margin:0 0 .9em}
+.thm h3{font-family:var(--display);font-weight:600;font-size:19px;margin:1.1em 0 .35em}
+.thm h3:first-child{margin-top:0}
+.thm ul{margin:0 0 .5em;padding-left:1.2em}
+.thm li{margin:0 0 .45em}
+.thm li::marker{color:var(--muted)}
+.thm strong{font-weight:600}
 .thm .label{font-weight:600}
 .thm .note{color:var(--muted);font-size:16px}
 .thm .katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
 footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
+footer ul{margin:0;padding-left:1.2em}
+footer li{margin:0 0 .3em}
 @media (prefers-reduced-motion: reduce){ .cap > div{animation:none} }
 </style>
 
@@ -77,14 +89,44 @@ footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
 </section>
 
 <div class="cap" id="cap">
-  <div data-ph="0">Hecke: the functional equation relates \(f(z)\) to \(f(-1/(Nz))\), a half-turn about \(i/\sqrt N\) that moves every point inside the semicircles \(|z-n|<1/\sqrt N\) up. It is a reflection in the semicircle followed by a reflection in a vertical line. The shaded region above the semicircles is a fundamental domain for \(z\mapsto z+1\) and \(z\mapsto-1/(Nz)\); for \(N\le4\) its hyperbolic area is \(2\arcsin(\sqrt N/2)\).</div>
-  <div data-ph="1" hidden>At \(N=5\) a gap opens at \(\tfrac12\) and the fundamental domain reaches the real line, so its area is infinite. Over the gap the functional equation gives no control: for \(N\ge5\) the series satisfying it form an infinite-dimensional space.</div>
-  <div data-ph="2" hidden>The Euler product gives a functional equation for the twist by every Ramanujan sum \(c_q\), with conductor \(\operatorname{lcm}(N,q^2)\). For \(q=2\) only the translate \(z+\tfrac12\) occurs, so this is one more half-turn, about \(\tfrac12+i/\sqrt{\operatorname{lcm}(N,4)}\).</div>
-  <div data-ph="3" hidden>With \(q\le 2\) the line stays covered up to \(N=8\). At \(N=9\) the semicircles only touch, at \(\tfrac13\) and \(\tfrac23\): the two cusps of \(\Gamma_0(9)\) with denominator \(3\).</div>
-  <div data-ph="4" hidden>At \(N=11\) gaps open that no single half-turn reaches. (\(N=10\) and \(N=12\) are still covered with \(q\le2\); from \(N=13\) on they never are.)</div>
-  <div data-ph="5" hidden>Twists with \(q\ge3\) reach the gaps, but each controls only the sum of \(f\) over the translates \(z+a/q\) with \(\gcd(a,q)=1\): the hollow dots all turn together. The spanning theorem says these sums can be untangled exactly when \(16\nmid N\) and \(p^2\nmid N\) for every odd prime \(p\).</div>
-  <div data-ph="6" hidden>At \(N=9\) they cannot be. Only one semicircle contains \(\tfrac13\): the \(q=3\) one centred there; every other one is at best tangent. Its relation only sees \(f(z+\tfrac13)+f(z+\tfrac23)\), in which \(+1\) near \(\tfrac13\) and \(-1\) near \(\tfrac23\) cancel. The paper's vector with these signs is orthogonal to every legal row.</div>
-  <div data-ph="7" hidden>Choose \(N\) and the largest \(q\) below, and hover over the picture (or touch it) to see a point reflected in its semicircle and then in a vertical line, which together make the half-turn about the top of the semicircle.</div>
+  <div data-ph="0"><ul>
+    <li><strong>One functional equation</strong> relates \(f(z)\) and \(f(-1/(Nz))\): a half-turn about \(i/\sqrt N\).</li>
+    <li>Inside the semicircles \(|z-n|&lt;1/\sqrt N\) it <strong>moves points up</strong> (a reflection in the semicircle, then in a vertical line).</li>
+    <li>For \(N\le4\) the semicircles <strong>cover the line</strong>; the shaded fundamental domain has area \(2\arcsin(\sqrt N/2)\).</li>
+  </ul></div>
+  <div data-ph="1" hidden><ul>
+    <li>At \(N=5\) a <strong>gap</strong> opens at \(\tfrac12\).</li>
+    <li>The fundamental domain reaches the line: its area is <strong>infinite</strong>.</li>
+    <li>Over the gap there is no control: for \(N\ge5\) the solutions form an <strong>infinite-dimensional</strong> space.</li>
+  </ul></div>
+  <div data-ph="2" hidden><ul>
+    <li>The Euler product gives a functional equation for every <strong>Ramanujan-sum twist</strong> \(c_q\), of conductor \(\operatorname{lcm}(N,q^2)\).</li>
+    <li>For \(q=2\) only \(z+\tfrac12\) occurs: <strong>one more half-turn</strong>, about \(\tfrac12+i/\sqrt{\operatorname{lcm}(N,4)}\).</li>
+    <li>It <strong>closes the gap</strong>.</li>
+  </ul></div>
+  <div data-ph="3" hidden><ul>
+    <li>With \(q\le2\) the line stays <strong>covered up to \(N=8\)</strong>.</li>
+    <li>At \(N=9\) the semicircles <strong>only touch</strong>, at \(\tfrac13\) and \(\tfrac23\).</li>
+    <li>These are the two <strong>cusps</strong> of \(\Gamma_0(9)\) with denominator \(3\).</li>
+  </ul></div>
+  <div data-ph="4" hidden><ul>
+    <li>At \(N=11\) <strong>gaps</strong> open that no single half-turn reaches.</li>
+    <li>\(N=10\) and \(N=12\) are still covered with \(q\le2\); from \(N=13\) on, never.</li>
+  </ul></div>
+  <div data-ph="5" hidden><ul>
+    <li>Twists with \(q\ge3\) <strong>reach the gaps</strong>.</li>
+    <li>But each controls only the <strong>sum</strong> of \(f\) over \(z+a/q\), \(\gcd(a,q)=1\): the hollow dots turn together.</li>
+    <li>Spanning theorem: the sums can be <strong>untangled</strong> exactly when \(16\nmid N\) and \(p^2\nmid N\) for odd \(p\).</li>
+  </ul></div>
+  <div data-ph="6" hidden><ul>
+    <li>At \(N=9\) they <strong>cannot</strong> be untangled.</li>
+    <li>Only one semicircle contains \(\tfrac13\): the <strong>\(q=3\)</strong> one centred there; all others are at best tangent.</li>
+    <li>It sees only \(f(z+\tfrac13)+f(z+\tfrac23)\), where <strong>\(+1\) near \(\tfrac13\) and \(-1\) near \(\tfrac23\) cancel</strong>.</li>
+  </ul></div>
+  <div data-ph="7" hidden><ul>
+    <li>Choose \(N\) and the largest \(q\) with the sliders.</li>
+    <li><strong>Hover</strong> (or touch) to see a point reflected in its semicircle, then in a vertical line.</li>
+  </ul></div>
 </div>
 <div class="phases" id="phases"></div>
 <div class="readout" id="readout" aria-live="polite"></div>
@@ -100,15 +142,38 @@ footer{margin-top:26px;font-size:14px;color:var(--muted);max-width:80ch}
 </div>
 
 <section class="thm">
-  <p>For a sequence \((f_n)\) put \(f(z)=\sum_{n\ge1} f_n n^{\frac{k-1}{2}}e^{2\pi i n z}\). The functional equation of \(L_f(s)\) is equivalent to
-  $$f\!\left(-\frac{1}{Nz}\right)=\epsilon_f\,(-i\sqrt N z)^k f(z).$$
-  The map \(z\mapsto-1/(Nz)\) is a half-turn of the hyperbolic plane about \(i/\sqrt N\), and \(\operatorname{Im}(-1/(Nz))=\operatorname{Im}(z)/(N|z|^2)\), so it moves \(z\) up exactly when \(|z|<1/\sqrt N\). Together with \(f(z+1)=f(z)\), this determines \(f\) near the real line from its values higher up wherever the semicircles \(|z-n|<1/\sqrt N\) reach. That is everywhere when \(N\le4\), when the region \(0\le\operatorname{Re}z\le1\), \(|z|\ge1/\sqrt N\), \(|z-1|\ge1/\sqrt N\) is a fundamental domain of finite area \(2\arcsin(\sqrt N/2)\) for the group generated by the two maps (\(\pi/3,\pi/2,2\pi/3,\pi\) for \(N=1,2,3,4\)).</p>
-  <p>If \(L_f\) has an Euler product, the twist of \(L_f\) by the Ramanujan sum \(c_q(n)=\sum_{\gcd(a,q)=1}e^{2\pi i an/q}\) satisfies a functional equation of conductor \(\ell_N(q)=\operatorname{lcm}(N,q^2)\). In terms of \(f\) it relates \(\sum_{\gcd(a,q)=1}f(z+\tfrac aq)\) to the same sum at \(-1/(\ell_N(q)z)\): the half-turn about \(i/\sqrt{\ell_N(q)}\), applied to all the translates at once. It raises points inside the semicircles of radius \(1/\sqrt{\ell_N(q)}\) centred at the fractions \(a/q\).</p>
-  <p><span class="label">The spanning theorem</span> (the case of the empty set of primes). For \(Q\in\mathbb N\), \(q\mid Q\) and \(u\in\mathbb Z\), let \(R^Q_{q,u}=\sum_{\gcd(a,q)=1}e_{u+aQ/q}\in\mathbb Q^{\mathbb Z/Q\mathbb Z}\), and call it <em>legal</em> if \(\max\{|u|,|u+1|\}<Q/\sqrt{\ell_N(q)}\). There is a \(Q\) for which the legal rows span \(\mathbb Q^{\mathbb Z/Q\mathbb Z}\) if and only if \(N\) is divisible neither by \(16\) nor by \(p^2\) for an odd prime \(p\).</p>
-  <p class="note">A legal row is a relation used on the cell \([\tfrac uQ,\tfrac{u+1}{Q}]\) shifted to each \(a/q\): the cell has to lie inside the shadow of the semicircle. When the rows span, every value of \(f\) near the real line is a combination of values strictly higher up. At an excluded level the points \(a/s\) (\(s=p\) with \(p^2\mid N\), or \(s=4\) with \(16\mid N\)) lie inside exactly one semicircle each, the one with \(q=s\) centred there; this was checked in exact arithmetic for all \(q\le200\) at \(N=9,16,18,25,27,36\).</p>
+  <h3>One functional equation</h3>
+  <ul>
+    <li>For a sequence \((f_n)\) put \(f(z)=\sum_{n\ge1} f_n n^{\frac{k-1}{2}}e^{2\pi i n z}\). The functional equation of \(L_f(s)\) says
+    $$f\!\left(-\frac{1}{Nz}\right)=\epsilon_f\,(-i\sqrt N z)^k f(z).$$</li>
+    <li>\(z\mapsto-1/(Nz)\) is a <strong>half-turn</strong> of the hyperbolic plane about \(i/\sqrt N\).</li>
+    <li>\(\operatorname{Im}(-1/(Nz))=\operatorname{Im}(z)/(N|z|^2)\), so it <strong>raises \(z\)</strong> exactly when \(|z|&lt;1/\sqrt N\).</li>
+    <li>With \(f(z+1)=f(z)\): values near the line are determined by values higher up wherever the semicircles \(|z-n|&lt;1/\sqrt N\) reach, which is <strong>everywhere iff \(N\le4\)</strong>.</li>
+    <li>For \(N\le4\) the region \(0\le\operatorname{Re}z\le1\), \(|z|\ge1/\sqrt N\), \(|z-1|\ge1/\sqrt N\) is a fundamental domain of area \(2\arcsin(\sqrt N/2)\): \(\pi/3,\pi/2,2\pi/3,\pi\).</li>
+  </ul>
+  <h3>Twists by Ramanujan sums</h3>
+  <ul>
+    <li>\(c_q(n)=\sum_{\gcd(a,q)=1}e^{2\pi i an/q}\).</li>
+    <li>If \(L_f\) has an Euler product, its \(c_q\)-twist has a functional equation of conductor \(\ell_N(q)=\operatorname{lcm}(N,q^2)\).</li>
+    <li>In terms of \(f\), it relates \(\sum_{\gcd(a,q)=1}f(z+\tfrac aq)\) to the same sum at \(-1/(\ell_N(q)z)\): one half-turn applied to <strong>all the translates at once</strong>.</li>
+    <li>It raises points inside the semicircles of radius \(1/\sqrt{\ell_N(q)}\) centred at the fractions \(a/q\).</li>
+  </ul>
+  <h3>The spanning theorem (no Euler factors)</h3>
+  <ul>
+    <li>For \(q\mid Q\) and \(u\in\mathbb Z\): \(R^Q_{q,u}=\sum_{\gcd(a,q)=1}e_{u+aQ/q}\), <em>legal</em> if \(\max\{|u|,|u+1|\}&lt;Q/\sqrt{\ell_N(q)}\).</li>
+    <li>A legal row is one relation used on the cell \([\tfrac uQ,\tfrac{u+1}{Q}]\), shifted to each \(a/q\): the cell must lie <strong>under the semicircle</strong>.</li>
+    <li>Some \(Q\) makes the legal rows <strong>span</strong> \(\mathbb Q^{\mathbb Z/Q\mathbb Z}\) iff \(16\nmid N\) and \(p^2\nmid N\) for every odd prime \(p\).</li>
+    <li>Spanning means every value of \(f\) near the line is a combination of values <strong>strictly higher up</strong>.</li>
+  </ul>
+  <p class="note">At an excluded level the points \(a/s\) (\(s=p\) with \(p^2\mid N\), or \(s=4\) with \(16\mid N\)) lie inside exactly one semicircle each, the one with \(q=s\) centred there. This was checked in exact arithmetic for all \(q\le200\) at \(N=9,16,18,25,27,36\).</p>
 </section>
 <footer>
-  <p>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>. Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\); between integer values of \(N\) the radii are interpolated. The moving points follow the half-turns exactly, as two reflections along geodesics: in the semicircle, then in a vertical line; that line is drawn through the centre or a point half an integer away, which is the same map modulo 1.</p>
+  <ul>
+    <li>From A. R. Booker, M. Lee and N. Zubrilina, <em>Towards a twistless converse theorem</em>.</li>
+    <li>Semicircles are drawn for all \(q\) up to the slider value and all \(a\) with \(\gcd(a,q)=1\).</li>
+    <li>Between integer values of \(N\) the radii are interpolated; the label shows the nearest integer.</li>
+    <li>The moving points follow the half-turns exactly: a reflection in the semicircle, then in a vertical line (through the centre or half an integer away, the same map modulo 1).</li>
+  </ul>
 </footer>
 </div>
 
@@ -324,12 +389,12 @@ function draw(now){
       if(iy>YMAX){ ctx.fillStyle=MUTED; ctx.font=`${fsz(13)}px "Source Sans 3",sans-serif`; ctx.textAlign='left';
         ctx.fillText('the image is at height '+iy.toFixed(2)+', above the frame',L+14,BASE-12); }
       const cname=frac(((hit.c%1)+1)%1);
-      const how=`a reflection in the semicircle, which raises it to height ${iy.toFixed(3)} (${gain.toFixed(1)} times higher), then a reflection in a vertical line (dotted; modulo 1 it is the line through the centre)`;
-      if(hit.q<=2) read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i lies in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)}). The relation is the half-turn about ${cname} + ${r.toFixed(3)}i (ringed): ${how}.`;
-      else read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i lies in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)}). The relation only controls the sum over the ${centres.length} translates z + a/${hit.q} (hollow); each makes the half-turn about the top of its own semicircle: ${how}.`;
+      const tail=`height ${zy.toFixed(3)} → ${iy.toFixed(3)} (×${gain.toFixed(1)})`;
+      if(hit.q<=2) read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i  ·  in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)})  ·  half-turn about ${cname} + ${r.toFixed(3)}i (ringed) = reflection in the semicircle, then in the dotted line  ·  ${tail}`;
+      else read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i  ·  in the semicircle at ${cname} (q = ${hit.q}, radius ${r.toFixed(3)})  ·  the relation only sees the sum over the ${centres.length} translates z + a/${hit.q} (hollow), which turn together  ·  ${tail}`;
     } else {
       dot(sx(zx),sy(zy),5.5*LW,AMBER);
-      read=`No semicircle shown contains z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i: none of these relations moves it up.`;
+      read=`z = ${zx.toFixed(3)} + ${zy.toFixed(3)}i  ·  no semicircle shown contains it, so nothing moves it up`;
     }
   }
   ctx.restore();
